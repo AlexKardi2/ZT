@@ -193,7 +193,7 @@ public class CombatAction : MonoBehaviour
                     if (Random.Range(0, 100) < hitChanse)
                     {
                         //ADD getting damage from character & weapon
-                        int damage = 1;
+                        int damage = 4;
                         cA.target.HP -= damage;
                         print(cA.target.name + "'s got " + damage + " damage.");
                         if (cA.target.HP <= 0)
