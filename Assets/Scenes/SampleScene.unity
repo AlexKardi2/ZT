@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 476735864}
   - component: {fileID: 476735863}
   - component: {fileID: 476735865}
+  - component: {fileID: 476735866}
   m_Layer: 0
   m_Name: ScriptObject
   m_TagString: Untagged
@@ -199,6 +200,7 @@ MonoBehaviour:
   action: 
   subject: {fileID: 0}
   target: {fileID: 0}
+  usedItem: {fileID: 0}
   place: 
   oDCost: 0
 --- !u!114 &476735865
@@ -213,6 +215,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d89252693b1bb74a97da16987bc6294, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &476735866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476735859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ad2a9678f141c843b3d51a02bc3d4bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rangedAttack: 1
+  range: 2
+  odCost: 5
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -597,13 +614,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charName: Den
-  ai: 
+  dead: 0
+  level: 1
+  pos: 0100000001000000
+  usesOffHand: 0
+  equipment: []
+  ST: 6
+  PE: 3
+  EN: 6
+  AG: 8
   totalOD: 0
   maxHP: 0
   HP: 0
-  pos: 0100000001000000
-  usesOffHand: 0
-  dead: 0
+  AC: 0
+  MD: 0
+  ai: 
   planningOD: 8
   planningPos: 0000000000000000
   personalPlanningList: []
@@ -739,13 +764,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   charName: Alex
-  ai: 
+  dead: 0
+  level: 1
+  pos: 0300000003000000
+  usesOffHand: 0
+  equipment: []
+  ST: 6
+  PE: 3
+  EN: 6
+  AG: 8
   totalOD: 0
   maxHP: 0
   HP: 0
-  pos: 0300000003000000
-  usesOffHand: 0
-  dead: 0
+  AC: 0
+  MD: 0
+  ai: 
   planningOD: 8
   planningPos: 0000000000000000
   personalPlanningList: []

@@ -11,9 +11,11 @@ public class CombatCharacter : MonoBehaviour
     public string charName;
     public bool dead = false;
     public int level = 1;
-    public int[] pos=new int[2];
+    public int[] pos = new int[2];
     public bool usesOffHand = false;
-    //ADD vars or array or dictionary of Item for equipment
+
+    //[0] for right hand, [1] for left hand
+    public List<Item> equipment = new List<Item>();
 
     //Basic stats
     public int ST = 6; //CHANGE to 5 later //Strenght
@@ -31,23 +33,23 @@ public class CombatCharacter : MonoBehaviour
 
     //AI Stats
     public string ai = "";
-    
+
     //Planning stuff
-    public int planningOD=8;
+    public int planningOD = 8;
     public int[] planningPos = new int[2];
     public List<CombatAction> personalPlanningList = new List<CombatAction>();
 
     //setting X & Y corrections for 1st circle + List of child GameObjects
-    private int[] xOddCorrArray = new int[] { 1, 1, 1, 0, -1, 0}; //for Odd row
+    private int[] xOddCorrArray = new int[] { 1, 1, 1, 0, -1, 0 }; //for Odd row
     private int[] xEvenCorrArray = new int[] { 0, 1, 0, -1, -1, -1 }; //for Even row
-    private int[] yCorrArray = new int[] { 1, 0, -1, -1, 0, 1};
+    private int[] yCorrArray = new int[] { 1, 0, -1, -1, 0, 1 };
     public GameObject prefabClickZone;
-    private List<GameObject> clickZones=new List<GameObject>();
+    private List<GameObject> clickZones = new List<GameObject>();
     public GameObject attackZone;
 
     //TEMP variables before have created item system
-        
-    
+
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -56,7 +58,7 @@ public class CombatCharacter : MonoBehaviour
 
     private void Start()
     {
-        
+
         if (ai == "")
             CalculateSecStats();
         ResetOD();
@@ -66,15 +68,20 @@ public class CombatCharacter : MonoBehaviour
         int i = cCList.IndexOf(this);
         CombatCharacter.cCList[i].pos[0] = i;
         CombatCharacter.cCList[i].pos[1] = i;
+        CombatCharacter.cCList[i].equipment.Add(null);
+        CombatCharacter.cCList[i].equipment.Add(null);
+        CombatCharacter.cCList[i].equipment[0] = Item.items[1];
+        CombatCharacter.cCList[i].equipment[1] = Item.items[2];
 
         //This is not temporary part
         ResetPlanning();
         CombatCharacter.cCList[i].transform.position = new Vector3(CoordArray.cArray[CombatCharacter.cCList[i].pos[0], CombatCharacter.cCList[i].pos[1], 0], CoordArray.cArray[CombatCharacter.cCList[i].pos[0], CombatCharacter.cCList[i].pos[1], 1], 0);
         CombatCharacter.cCList[i].CreateClickZones();
+        //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
 
         //TEMP part continuing
         if (i == 1) CombatCharacter.cCList[1].ai = "rat";
-        if (i == (cCList.Count-1))
+        if (i == (cCList.Count - 1))
             CombatCharacter.cCList[Status.player].StartPlanning();
 
     }
@@ -88,7 +95,7 @@ public class CombatCharacter : MonoBehaviour
 
     }
 
-    public void CreateClickZones ()
+    public void CreateClickZones()
     {
         //Create correct x+y corrections arrays
         int[] xCorrArray = new int[yCorrArray.Length];
@@ -98,11 +105,11 @@ public class CombatCharacter : MonoBehaviour
             xCorrArray = xOddCorrArray;
 
         //Create array for corrections coordinates of ClickZones
-        List<float[]> clickzoneCoordCorrections = new List<float[]>(); 
-        for (int i=0; i< yCorrArray.Length; i++)
+        List<float[]> clickzoneCoordCorrections = new List<float[]>();
+        for (int i = 0; i < yCorrArray.Length; i++)
         {
-            int x=1 + xOddCorrArray[i];
-            int y=1 + yCorrArray[i];
+            int x = 1 + xOddCorrArray[i];
+            int y = 1 + yCorrArray[i];
             float[] thisCoords = new float[2];
 
             thisCoords[0] = (CoordArray.cArray[x, y, 0] - CoordArray.cArray[1, 1, 0]);
@@ -118,28 +125,28 @@ public class CombatCharacter : MonoBehaviour
             clickZones[i].GetComponent<ClickArea>().combatCharacter = this;
 
             //Setting X & Y corrections for zones
-            
-            
+
+
             clickZones[i].GetComponent<ClickArea>().xCorrection = xCorrArray[i];
             clickZones[i].GetComponent<ClickArea>().yCorrection = yCorrArray[i];
 
             //Setting places for click zones
             //clickZones[i].transform.position = new Vector3 (CoordArray.cArray[(this.pos[0] + xCorrArray[i]), (this.pos[1] + yCorrArray[i]), 0], CoordArray.cArray[(this.pos[0] + xCorrArray[i]), (this.pos[1] + yCorrArray[i]), 1], 0);
-            clickZones[i].transform.position = new Vector3((this.transform.position.x+clickzoneCoordCorrections[i][0]), (this.transform.position.y + clickzoneCoordCorrections[i][1]), 0);
+            clickZones[i].transform.position = new Vector3((this.transform.position.x + clickzoneCoordCorrections[i][0]), (this.transform.position.y + clickzoneCoordCorrections[i][1]), 0);
 
             clickZones[i].SetActive(false); //Turning them off
         }
 
         attackZone = Instantiate<GameObject>(prefabClickZone);
         attackZone.transform.parent = this.transform;
-        attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1],0], CoordArray.cArray[this.pos[0], this.pos[1], 1],0);
+        attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
         attackZone.GetComponent<ClickArea>().combatCharacter = this;
         attackZone.GetComponent<ClickArea>().action = "attack";
         attackZone.SetActive(false);
 
     }
 
-    public void ResetPlanning ()
+    public void ResetPlanning()
     {
         planningOD = totalOD;
         planningPos[0] = pos[0];
@@ -147,7 +154,7 @@ public class CombatCharacter : MonoBehaviour
         this.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
     }
 
-    public void StartPlanning (bool start=true)
+    public void StartPlanning(bool start = true)
     {
         if (start && this.ai != "")
         {
@@ -157,16 +164,16 @@ public class CombatCharacter : MonoBehaviour
             Status.NextPlayer();
             return;
         }
-        
-        for (int i=0; i<clickZones.Count; i++)
+
+        for (int i = 0; i < clickZones.Count; i++)
         {
-            
+
             if ((planningPos[1] % 2) == 0)
                 clickZones[i].GetComponent<ClickArea>().xCorrection = xEvenCorrArray[i];
             else
                 clickZones[i].GetComponent<ClickArea>().xCorrection = xOddCorrArray[i];
         }
-        
+
         foreach (GameObject cz in clickZones)
         {
             if (start)
@@ -174,7 +181,7 @@ public class CombatCharacter : MonoBehaviour
                 int xCurrent = pos[0] + cz.GetComponent<ClickArea>().xCorrection;
                 int yCurrent = pos[1] + cz.GetComponent<ClickArea>().yCorrection;
 
-                bool check=true;
+                bool check = true;
                 check = (xCurrent >= 0) && (xCurrent < Location.xSize) && (yCurrent >= 0) && (yCurrent < Location.ySize);
                 foreach (CombatCharacter cC in CombatCharacter.cCList)
                 {
@@ -198,16 +205,16 @@ public class CombatCharacter : MonoBehaviour
             {
                 cC.attackZone.SetActive(false);
             }
-        } 
+        }
 
     }
 
-    public void ResetOD ()
+    public void ResetOD()
     {
         OD = totalOD;
     }
 
-    public bool SpendOD (int cost, bool isPlanning=false)
+    public bool SpendOD(int cost, bool isPlanning = false)
     {
         if (isPlanning == false)
         {
@@ -217,8 +224,9 @@ public class CombatCharacter : MonoBehaviour
             {
                 OD -= cost;
                 return true;
-            }    
-        } else
+            }
+        }
+        else
         {
             if (planningOD < cost)
                 return false;
@@ -231,21 +239,21 @@ public class CombatCharacter : MonoBehaviour
 
     }
 
-    public void MovePlan (int x, int y)
+    public void MovePlan(int x, int y)
     {
-        if ((Mathf.Abs(planningPos[0]-x)>1) || (Mathf.Abs(planningPos[1] - y) > 1))
+        if ((Mathf.Abs(planningPos[0] - x) > 1) || (Mathf.Abs(planningPos[1] - y) > 1))
         {
             print("WRONG coordinates for MovePlan!!!");
             return;
         }
 
         int oDcost = Location.map[x, y].od;
-        
+
         if ((planningOD - oDcost) < 0) return;
-        
+
         //Creating planning combat action
         //print("Triying to add move action to " + x + " " + y);
-        
+
         bool check;
         personalPlanningList.Add(new CombatAction());
         check = personalPlanningList[(personalPlanningList.Count - 1)].Move(this, x, y);
@@ -296,8 +304,8 @@ public class CombatCharacter : MonoBehaviour
 
         /*if (planningOD == 0) 
             Status.NextPlayer();*/
-      
+
     }
 
-    
+
 }

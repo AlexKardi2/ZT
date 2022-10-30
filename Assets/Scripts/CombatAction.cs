@@ -8,7 +8,7 @@ public class CombatAction : MonoBehaviour
     public CombatCharacter subject;
     public CombatCharacter target;
     //public CombatObject targetObject;
-    //public Item usedItem; ADD this
+    public Item usedItem; 
     public int[] place = new int[2]; //[0] for X; [1] for Y
     public int oDCost;
     private int turn;
@@ -38,19 +38,21 @@ public class CombatAction : MonoBehaviour
     {
         if ((subj == null)||(obj==null)) 
             return false;
+        Item weapon;
+        if (subj.usesOffHand)
+            weapon= subj.equipment[1];
+        else
+            weapon = subj.equipment[0];
 
-        int oDcost = 4; //CHANGE to getting od cost from subj (ADD)
-
-        if (subj.SpendOD(oDcost, true))
+        if (subj.SpendOD(weapon.odCost, true))
         {
             CombatAction thisAttack = new CombatAction();
             thisAttack.turn = Status.turn;
-            thisAttack.oDCost = oDcost;
             thisAttack.action = "attack";
             thisAttack.subject = subj;
             thisAttack.target = obj;
-
-            //ADD weapon from correct hand 
+            thisAttack.usedItem = weapon;
+            thisAttack.oDCost = weapon.odCost;
             subj.personalPlanningList.Add(thisAttack);
             return true;
         }
@@ -159,8 +161,13 @@ public class CombatAction : MonoBehaviour
             }
             else if (cA.action == "attack")
             {
-                //ADD getting range from character(done) & weapon
-                int weaponRange = 4;
+                Item weapon = cA.usedItem;
+                if ((cA.subject.equipment[0]!=weapon)&&(cA.subject.equipment[1] != weapon)) {
+                    print("You haven't this weapon to use !!");
+                    continue;
+                }
+
+                int weaponRange = weapon.range;
                 int characterRange = (cA.subject.PE*2)-1;
                 int range = Mathf.Max(weaponRange, characterRange);
              
@@ -170,19 +177,19 @@ public class CombatAction : MonoBehaviour
                     //Find target from coordinates place[] and set a CombatCharacter or Object as target
                 }
                
-                bool checkList = true; //ADD here range check
+                bool checkList = true;
 
                 if (range < Scripts.FindDistance(cA.subject.pos, cA.target.pos))
                     checkList=false;
 
+                //ADD check for obstacle, change target to object if u need
+                
                 if (!checkList)
                     continue;
 
-                //ADD check for obstacle, change target to object if u need
+                int oDcost = Mathf.Max(cA.oDCost, weapon.odCost);
 
-                //ADD rewriting correct cA.oDCost
-
-                if (checkList && cA.subject.SpendOD(cA.oDCost))
+                if (checkList && cA.subject.SpendOD(oDcost))
                 {
                     log.Add(cA);
 
@@ -192,8 +199,7 @@ public class CombatAction : MonoBehaviour
                     if (hitChanse < 0) hitChanse = 0;
                     if (Random.Range(0, 100) < hitChanse)
                     {
-                        //ADD getting damage from character & weapon
-                        int damage = 4;
+                        int damage = weapon.damage;
                         cA.target.HP -= damage;
                         print(cA.target.name + "'s got " + damage + " damage.");
                         if (cA.target.HP <= 0)

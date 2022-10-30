@@ -33,7 +33,7 @@ public class Movie : MonoBehaviour
             CombatAction thisAction = combatLog[Status.playAct]; 
             if (summator == Vector3.zero)
             {
-                print("Action"+Status.playAct+" moving to "+thisAction.place[0]+" "+ thisAction.place[1]);
+                //print("Action"+Status.playAct+" moving to "+thisAction.place[0]+" "+ thisAction.place[1]);
                 
                 summator.x = (CoordArray.cArray[(combatLog[Status.playAct].place[0]), (combatLog[Status.playAct].place[1]), 0] - combatLog[Status.playAct].subject.transform.position.x) / divider;
                 summator.y = (CoordArray.cArray[(combatLog[Status.playAct].place[0]), (combatLog[Status.playAct].place[1]), 1] - combatLog[Status.playAct].subject.transform.position.y) / divider;
@@ -68,7 +68,7 @@ public class Movie : MonoBehaviour
             {
                 Vector3 target;
 
-                print("Action" + Status.playAct + ". " + thisAction.subject.name + " attacking " + thisAction.target.name);
+                //print("Action" + Status.playAct + ". " + thisAction.subject.name + " attacking " + thisAction.target.name);
                 if (thisAction.target == null)
                 {
                     target = new Vector3(CoordArray.cArray[thisAction.place[0], thisAction.place[1], 0], CoordArray.cArray[thisAction.place[0], thisAction.place[1], 1],0);
@@ -86,7 +86,7 @@ public class Movie : MonoBehaviour
                 bulletPosition.y += 0.1f;
                 bullet = Instantiate(bulletPrefab, bulletPosition, bulletPrefab.transform.rotation);
                 bullet.transform.LookAt(target);
-                print(bullet.transform.rotation.eulerAngles);
+                //print(bullet.transform.rotation.eulerAngles);
                 int minus=1;
                 if (bullet.transform.rotation.eulerAngles.y < 180)
                     minus = -1;
@@ -99,7 +99,7 @@ public class Movie : MonoBehaviour
 
             if (++numenator == divider)
             {
-                print("Action N" + Status.playAct + " is finished");
+                //print("Action N" + Status.playAct + " is finished");
                 Destroy(bullet);
                 Status.playAct++;
                 numenator = 0;
