@@ -5,17 +5,33 @@ using UnityEngine;
 public class CombatCharacter : MonoBehaviour
 {
     //List of all Combat Characters in the scenes
-    public static List<CombatCharacter> cCList = new List<CombatCharacter>();
+    public static List<CombatCharacter> cCList = new();
+
+    //Balansing variables
+    private int levelUpMultipler = 2;
+
+    //Technical use variables
+    //setting X & Y corrections for 1st circle + List of child GameObjects
+    private int[] xOddCorrArray = new int[] { 1, 1, 1, 0, -1, 0 }; //for Odd row
+    private int[] xEvenCorrArray = new int[] { 0, 1, 0, -1, -1, -1 }; //for Even row
+    private int[] yCorrArray = new int[] { 1, 0, -1, -1, 0, 1 };
+    public GameObject prefabClickZone;
+    public GameObject attackZone;
+    public OverheadMessage OverheadText { get; protected set; }
+    private List<GameObject> clickZones = new List<GameObject>();
+
 
     //Variables
     public string charName;
     public bool dead = false;
     public int level = 1;
     public int[] pos = new int[2];
+    private int experience = 0;
     public bool usesOffHand = false;
 
     //[0] for right hand, [1] for left hand
-    public List<Item> equipment = new List<Item>();
+    public List<Item> equipment = new();
+    public Dictionary<string,int> skills = new();
 
     //Basic stats
     public int ST = 6; //CHANGE to 5 later //Strenght
@@ -23,14 +39,32 @@ public class CombatCharacter : MonoBehaviour
     public int EN = 6; //CHANGE to 5 later //Endurance
     public int AG = 8; //CHANGE to 5 later //Agility
 
-    //Secondary stats
+    //Secondary stats vatiables
     public int totalOD; //Action points (ochki deystvija)
     private int OD;
     public int maxHP;
-    public int HP; //Healts points
     public int AC; //Acmor class
     public int MD; //Melee damage
+    public int bonusAC;
+    private int _hp;
 
+    //Secondary stats properties
+    public int HP { get => _hp; set
+        {
+            if (_hp==0)
+            {
+                _hp = value;
+            }
+            else if (_hp>value)
+            {
+                OverheadText?.ShowRed((value - _hp) + " HP");
+                _hp = value;
+            } else
+                _hp = value;
+            OverheadText?.ShowHP();
+
+        } }
+ 
     //AI Stats
     public string ai = "";
 
@@ -39,13 +73,7 @@ public class CombatCharacter : MonoBehaviour
     public int[] planningPos = new int[2];
     public List<CombatAction> personalPlanningList = new List<CombatAction>();
 
-    //setting X & Y corrections for 1st circle + List of child GameObjects
-    private int[] xOddCorrArray = new int[] { 1, 1, 1, 0, -1, 0 }; //for Odd row
-    private int[] xEvenCorrArray = new int[] { 0, 1, 0, -1, -1, -1 }; //for Even row
-    private int[] yCorrArray = new int[] { 1, 0, -1, -1, 0, 1 };
-    public GameObject prefabClickZone;
-    private List<GameObject> clickZones = new List<GameObject>();
-    public GameObject attackZone;
+
 
     //TEMP variables before have created item system
 
@@ -53,14 +81,16 @@ public class CombatCharacter : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        //print("Addint to cClist " + name);
         cCList.Add(this);
     }
 
     private void Start()
     {
+        //Getting components to technical use variables
+        OverheadText = GetComponentInChildren<OverheadMessage>();
 
-        if (ai == "")
-            CalculateSecStats();
+        CalculateSecStats();
         ResetOD();
         HP = maxHP;
 
@@ -80,9 +110,18 @@ public class CombatCharacter : MonoBehaviour
         //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
 
         //TEMP part continuing
-        if (i == 1) CombatCharacter.cCList[1].ai = "rat";
-        if (i == (cCList.Count - 1))
+        bool readyCheck=true;
+        //print("Ready Check started for "+cCList.Count);
+        foreach (CombatCharacter checkingCharacter in cCList) {
+            if (checkingCharacter.attackZone == null) readyCheck = false;
+        }
+        
+        if (readyCheck)
+        {
+            //print("Ready Check sucsessful for "+cCList[i].name);   
             CombatCharacter.cCList[Status.player].StartPlanning();
+        }
+            
 
     }
 
@@ -93,6 +132,24 @@ public class CombatCharacter : MonoBehaviour
         maxHP = 15 + (ST + (2 * EN));
         AC = AG; //ADD here adding AC for armor
 
+        //Calculating skills
+        if (!skills.ContainsKey("melee")) 
+            skills.Add("melee", 1);
+        if (!skills.ContainsKey("guns"))
+            skills.Add("guns", 1);
+        if (!skills.ContainsKey("unarmed"))
+            skills.Add("unarmed", 1);
+
+        Dictionary <string,int> minimalSkills = new();
+
+        minimalSkills.Add("melee", 20 + (2 * (ST + AG)));
+        minimalSkills.Add("guns", 5 + 4 * AG);
+        minimalSkills.Add("unarmed", 30 + (2 * (ST + AG)));
+
+        foreach (KeyValuePair<string,int> mimimalSkill in minimalSkills)
+        {
+            skills[mimimalSkill.Key] = Mathf.Max(skills[mimimalSkill.Key], mimimalSkill.Value);
+        }
     }
 
     public void CreateClickZones()
@@ -125,8 +182,6 @@ public class CombatCharacter : MonoBehaviour
             clickZones[i].GetComponent<ClickArea>().combatCharacter = this;
 
             //Setting X & Y corrections for zones
-
-
             clickZones[i].GetComponent<ClickArea>().xCorrection = xCorrArray[i];
             clickZones[i].GetComponent<ClickArea>().yCorrection = yCorrArray[i];
 
@@ -138,12 +193,15 @@ public class CombatCharacter : MonoBehaviour
         }
 
         attackZone = Instantiate<GameObject>(prefabClickZone);
+        /*if (attackZone != null)
+            print("AZone for " + name + " is created");
+        else
+            print("Error!!! AZone for " + name + "isn't created");*/
         attackZone.transform.parent = this.transform;
         attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
         attackZone.GetComponent<ClickArea>().combatCharacter = this;
         attackZone.GetComponent<ClickArea>().action = "attack";
         attackZone.SetActive(false);
-
     }
 
     public void ResetPlanning()
@@ -158,9 +216,12 @@ public class CombatCharacter : MonoBehaviour
     {
         if (start && this.ai != "")
         {
-            print("I want to start AI");
-            Scripts.Ai(this);
-            print("AI have finished work");
+            if (!dead)
+            {
+                print("I want to start AI");
+                Scripts.Ai(this);
+                print("AI have finished work");
+            }
             Status.NextPlayer();
             return;
         }
@@ -209,9 +270,86 @@ public class CombatCharacter : MonoBehaviour
 
     }
 
+    public void GetExperience(NonPlayerCharacter killedNPC)
+    {
+        experience += killedNPC.level;
+        if (experience>=level*levelUpMultipler)
+        {
+            //LevelUp protocol
+            experience -= level * levelUpMultipler;
+            level++;
+
+            int randomStart = 0;
+            int statSum = ST + PE + EN + AG;
+            if (statSum >= 40) randomStart++; 
+
+            switch (Random.Range(randomStart, 4))
+            {
+                case 0:
+                    //Improving stats
+                    int randomResult = Random.Range(1, (statSum + 1));
+                    if (randomResult<=ST)
+                    {
+                        if (ST < 10) ST++;
+                        else randomResult = ST + 1;
+                    }
+                    if ((randomResult > ST) && (randomResult <= ST+PE))
+                    {
+                        if (PE < 10) PE++;
+                        else randomResult = ST+PE+ 1;
+                    }
+                    if ((randomResult > ST+PE) && (randomResult <= ST+PE+EN))
+                    {
+                        if (EN < 10) EN++;
+                        else randomResult = ST + PE  + EN+ 1;
+                    }
+                    if (randomResult> ST + PE + EN)
+                    {
+                        if (AG < 10) AG++;
+                        else if (ST < 10) ST++;
+                        else if (PE < 10) PE++;
+                        else EN++;
+                    }
+                    CalculateSecStats();
+                    break;
+                case 1:
+                    int randomResult1 = Random.Range(0, 10);
+                    if (randomResult1==0)
+                    {
+                        equipment[0].BoostDamage("multipler");
+                    } else if (randomResult1 < 5)
+                    {
+                        equipment[0].BoostDamage("dice", 3);
+                    } else
+                        equipment[0].BoostDamage();
+
+                    break;
+                case 2:
+                    int randomResult2 = Random.Range(0, 10);
+                    if (randomResult2 == 0)
+                    {
+                        equipment[0].BoostDamage("multipler");
+                    }
+                    else if (randomResult2 < 5)
+                    {
+                        equipment[0].BoostDamage("dice", 3);
+                    }
+                    else
+                        equipment[0].BoostDamage();
+                    break;
+                /*case 3:    
+                    equipment[3].BoostArmor();
+                    break;*/
+            }
+
+        }
+    }
+
     public void ResetOD()
     {
         OD = totalOD;
+        bonusAC = 0;
+
     }
 
     public bool SpendOD(int cost, bool isPlanning = false)
@@ -307,5 +445,30 @@ public class CombatCharacter : MonoBehaviour
 
     }
 
+    public void BoostSkill(string skillname)
+    {
+        float difficalty = 0.1f; //<1 - much easier to train; >1 - much more difficult; 0-always trains
+        
+        if ((skillname == "") || (!skills.ContainsKey(skillname)))
+            return;
+
+        if (skills[skillname] >= 300)
+            return;
+
+        float chanse = 1-(float)(skills[skillname]/300);
+
+        chanse = Mathf.Pow(chanse, difficalty);
+        float roll = Random.value;
+        if (roll<chanse)
+        {
+            skills[skillname]++;
+            print("Skill " + skillname + "'v improved to "+skills[skillname]);
+        }
+            
+    }
+    /*public void DeathProtocol()
+    {
+        print("DEATH protocol is NOT working!!!");
+    }*/
 
 }

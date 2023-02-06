@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CombatAction : MonoBehaviour
 {
+    static private float rangeBalansingParametr = 1; //Multiplies max ranges of weapons & characters. Basicly 2 for FalloutPNP. 
+    
     public string action;
     public CombatCharacter subject;
     public CombatCharacter target;
@@ -166,11 +168,14 @@ public class CombatAction : MonoBehaviour
                     print("You haven't this weapon to use !!");
                     continue;
                 }
-
-                int weaponRange = weapon.range;
-                int characterRange = (cA.subject.PE*2)-1;
-                int range = Mathf.Max(weaponRange, characterRange);
-             
+                
+                int range = 1;
+                if (weapon.rangedAttack)
+                {
+                    int weaponRange = (int)(weapon.range * (1 / rangeBalansingParametr));
+                    int characterRange = (int)(cA.subject.PE * rangeBalansingParametr) - 1;
+                    range = Mathf.Max(weaponRange, characterRange);
+                }
 
                 if (cA.target == null)
                 {
@@ -193,25 +198,36 @@ public class CombatAction : MonoBehaviour
                 {
                     log.Add(cA);
 
-                    //ADD real Calculating chance to hit
-                    int hitChanse = Random.Range(-100, 500);
-                    if (hitChanse > 100) hitChanse = 100;
-                    if (hitChanse < 0) hitChanse = 0;
+                    int hitChanse = cA.subject.skills[weapon.skillname];
+                    // ADD if (cA.target.ai != "") cA.target.CheckAC();
+                    hitChanse -= cA.target.AC;
+                    hitChanse -= cA.target.bonusAC;
+
                     if (Random.Range(0, 100) < hitChanse)
                     {
                         int damage = weapon.damage;
                         cA.target.HP -= damage;
-                        print(cA.target.name + "'s got " + damage + " damage.");
+                        print(cA.target.name + "'s got " + damage + " damage. Hit chance was " + hitChanse);
                         if (cA.target.HP <= 0)
                         {
                             //cA.target.HP=0;
                             cA.target.dead = true;
+                            if (cA.target.ai!="")
+                            {
+                                NonPlayerCharacter npcTarget = (NonPlayerCharacter)cA.target;
+                                npcTarget.DeathProtocol();
+                                cA.subject.GetExperience(npcTarget);
+                            }
+                            //Add NPC death protocol ))
+                            //Add Game over protocol ))
 
                         }
                     }
                     else
                     {
                         print(cA.subject.name + " have missed ((( HitChanse was " + hitChanse);
+                        if (cA.subject.ai=="")
+                            cA.subject.BoostSkill(weapon.skillname);
                     }
                 }
             }
@@ -219,9 +235,10 @@ public class CombatAction : MonoBehaviour
             {
                 if (cA.subject.SpendOD(cA.oDCost))
                 {
+                    cA.subject.bonusAC += cA.oDCost;
                     log.Add(cA);
 
-                    //ADD encreasint defence chance
+                    
                 }
                 else
                     print(cA.subject.name + " can't wait anymore *(");

@@ -98,9 +98,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 318871b997f555343b6149f1e2791607, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  action: move
   xCorrection: 0
   yCorrection: 0
   combatCharacter: {fileID: 0}
+  costOD: 0
 --- !u!58 &2464289397350379705
 CircleCollider2D:
   m_ObjectHideFlags: 0

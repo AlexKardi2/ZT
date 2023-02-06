@@ -14,7 +14,7 @@ public class Scripts : MonoBehaviour
         return Get6CloseTiles(character.pos[0], character.pos[1]);
     }
 
-    public static List<int[]> Get6CloseTiles(int x, int y)
+     public static List<int[]> Get6CloseTiles(int x, int y)
     {
         List<int[]> list = new List<int[]>();
         int[] xOddCorrArray = new int[] { 1, 1, 1, 0, -1, 0 }; //for Odd row

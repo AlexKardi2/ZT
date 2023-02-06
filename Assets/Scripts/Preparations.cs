@@ -46,7 +46,8 @@ public class Preparations : MonoBehaviour
         if (!check) combatLog.RemoveAt(combatLog.Count - 1);*/
 
         //print("x" + CoordArray.cArray[7, 2, 0] + " y" + CoordArray.cArray[7, 2, 1]);
- 
+
+        NonPlayerCharacter.SpawnRat();
     }
 
     // Update is called once per frame

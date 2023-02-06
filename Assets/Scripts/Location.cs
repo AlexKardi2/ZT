@@ -37,4 +37,14 @@ public class Location : MonoBehaviour
 
     }
 
+    private void Start()
+    {
+        
+        
+        /*foreach (Location hex in map)
+        {
+
+        }*/
+    }
+
 }

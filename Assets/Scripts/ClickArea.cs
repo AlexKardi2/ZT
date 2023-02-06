@@ -22,12 +22,18 @@ public class ClickArea : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (action=="attack")
+        {
+            combatCharacter.OverheadText.Show("To hit: __%");
+        }
+    }
 
-        //print("Coordinates are "+(transform.parent.GetComponent<CombatCharacter>().pos[0]+xCorrection)+" "+ (transform.parent.GetComponent<CombatCharacter>().pos[1]+yCorrection));
+    private void OnMouseExit()
+    {
+        combatCharacter.OverheadText.ShowHP();
     }
 
     
-
     private void OnMouseDown()
     {
         //Start move action
@@ -66,9 +72,6 @@ public class ClickArea : MonoBehaviour
         {
             Status.NextPlayer();
         }
-            
-
-
     }
 
     // Update is called once per frame

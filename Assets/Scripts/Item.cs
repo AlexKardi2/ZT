@@ -13,6 +13,8 @@ public class Item : MonoBehaviour
 
     public int range = 2;
     public int odCost = 5;
+
+    public string skillname = "";
     
     // Start is called before the first frame update
     void Awake()
@@ -22,12 +24,14 @@ public class Item : MonoBehaviour
         thisItem.range = 1;
         thisItem.odCost = 3;
         thisItem.rangedAttack = false;
+        thisItem.skillname = "unarmed";
         items.Add(thisItem);
 
         thisItem = new Item();
         thisItem.SetDamage(1, 8, 8);
         thisItem.range = 19;
         thisItem.odCost = 5;
+        thisItem.skillname = "guns";
         items.Add(thisItem);
 
         thisItem = new Item();
@@ -35,6 +39,7 @@ public class Item : MonoBehaviour
         thisItem.range = 1;
         thisItem.odCost = 3;
         thisItem.rangedAttack = false;
+        thisItem.skillname = "melee";
         items.Add(thisItem);
 
         //print(items.Count);
@@ -66,6 +71,20 @@ public class Item : MonoBehaviour
         damageRandomMultipler = randomMultipler;
         damageRandomTo = randomTo;
         damageAddition = addition;
+    }
+
+    public void BoostDamage (string parametr="addition", int value=1)
+    {
+        if (parametr=="addition")
+        {
+            damageAddition += value;
+        } else if (parametr=="dice")
+        {
+            damageRandomTo += value;
+        } else if (parametr=="multipler")
+        {
+            damageRandomMultipler += value;
+        }
     }
 
 }
