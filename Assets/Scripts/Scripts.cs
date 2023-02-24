@@ -33,9 +33,6 @@ public class Scripts : MonoBehaviour
             {
                 tileCoords[0] = x + xOddCorrArray[i];
             }
-
-            //print((tileCoords[0]-x)+" "+(tileCoords[1]-y));
-
             list.Add(tileCoords);
         }
         
@@ -92,9 +89,19 @@ public class Scripts : MonoBehaviour
 
     public static void Ai (CombatCharacter bot, string ai="rat")
     {
-        print("Bot for " + bot.name + " started.");
-        //ADD choosing enemy
-        CombatCharacter enemy = CombatCharacter.cCList[0];
+        CombatCharacter enemy=null;
+        float priority = 0f;
+        foreach (CombatCharacter cC in CombatCharacter.cCList) {
+            if (cC.ai != "") continue;
+            float currentPriority = (float)Location.Distance(bot.pos, cC.pos)*cC.HP/cC.MaxHP;
+            if (enemy==null || currentPriority<priority) {
+                enemy = cC;
+                priority = currentPriority;
+            }
+        }
+        if (enemy == null)
+            return;
+        //print("Bot for " + bot.name + " started and 'v chosen "+enemy.charName+" as enemy");
 
         bool enoughOD = true;
         int i = 0;
@@ -103,14 +110,12 @@ public class Scripts : MonoBehaviour
         {
             if (Scripts.FindDistance(bot.planningPos,enemy.pos)<=1) {
                 enoughOD = CombatAction.Attack(bot, enemy);
-                print("'v planned to ATTACK");
             } else
             {
                 bool check=false;
                 int[] moveCoordinates = Scripts.TileToTarget(bot.planningPos, enemy.pos);
                 bot.personalPlanningList.Add(new CombatAction());
                 enoughOD= bot.personalPlanningList[(bot.personalPlanningList.Count - 1)].Move(bot, moveCoordinates[0], moveCoordinates[1]);
-                print("'v planned to move to " + moveCoordinates[0] + " " + moveCoordinates[1]);
                 if (!enoughOD) bot.personalPlanningList.RemoveAt(bot.personalPlanningList.Count - 1);
 
                 //Moving plan position and sprite
@@ -120,10 +125,39 @@ public class Scripts : MonoBehaviour
             i++;
             if (i > 10) break;  
         }
-
-        
-
-
     }
+
+    public static int HitChanse (CombatCharacter subject, CombatCharacter target, Item weapon)
+    {
+        /*if (subject.loc == null || target.loc == null) //TODO turn it back after repair Location class
+            return 0;*/
+
+        int range;
+		if (weapon.rangedAttack)
+        {
+            range = weapon.Range;
+        }
+        else
+            range = 1;
+
+        int distance = Location.Distance(subject.planningPos, target.pos);
+		int perseptionLenght = subject.PE-1;
+		
+        if (distance > range)
+            return 0;
+		
+        int hitChanse = subject.skills[weapon.skillname];
+        // ADD if (cA.target.ai != "") cA.target.CheckAC();
+        hitChanse -= target.AC;
+        hitChanse -= target.bonusAC;
+		if (distance>perseptionLenght)
+			hitChanse-=(distance-perseptionLenght)*5;
+		if (hitChanse<0) 
+			hitChanse=0;
+
+        return hitChanse;
+    }
+	
+	public static int HitChanse (CombatCharacter subject, CombatCharacter target) => subject.usesOffHand ? HitChanse (subject, target, subject.equipment[1]) : HitChanse (subject, target, subject.equipment[0]);
         
 }

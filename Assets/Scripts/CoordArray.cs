@@ -132,15 +132,42 @@ public class CoordArray : MonoBehaviour
 
     public static Vector3 HexCenter(int x, int y)
     {
-        if ((x < 0) || y < 0 || x > xSize || y > ySize)
-            return Vector3.zero;
-        else
-            return new Vector3(cArray[x, y, 0], cArray[x, y, 1]);
+        
+        return new Vector3(cArray[x, y, 0], cArray[x, y, 1]);
     }
 
     // Update is called once per frame
     void Update()
     {
+        /*if (Input.GetMouseButtonDown(0)) //TODO Wrap it to method somewhere
+        {
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            float xOne = (HexCenter(1, 0) - HexCenter(0, 0)).x;
+            float yOne = (HexCenter(0, 1) - HexCenter(0, 0)).y;
+            int firstX = (int)((mousePosition.x - HexCenter(0, 0).x) / xOne);
+            int lastX = firstX + 2;
+            int firstY = (int)((mousePosition.y - HexCenter(0, 0).y) / yOne);
+            int lastY = firstY + 1;
+            float minDistance = float.MaxValue;
+            int foundX=-1;
+            int foundY=-1;
+
+            for (int x = firstX; x <= lastX; x++)
+            {
+                for (int y=firstY; y<=lastY; y++)
+                {
+                    float distance = (mousePosition - (Vector2)HexCenter(x, y)).magnitude;
+                    if (distance<minDistance)
+                    {
+                        minDistance = distance;
+                        foundX = x;
+                        foundY = y;
+                    }
+                        
+                }
+            }    
+             print(foundX + " " + foundY);
+        }*/
 
     }
 }

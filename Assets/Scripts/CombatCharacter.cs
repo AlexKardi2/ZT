@@ -8,7 +8,8 @@ public class CombatCharacter : MonoBehaviour
     public static List<CombatCharacter> cCList = new();
 
     //Balansing variables
-    private int levelUpMultipler = 2;
+    private readonly int levelUpMultipler = 2;
+    private readonly int levelUpHealDevider = 3;
 
     //Technical use variables
     //setting X & Y corrections for 1st circle + List of child GameObjects
@@ -18,12 +19,19 @@ public class CombatCharacter : MonoBehaviour
     public GameObject prefabClickZone;
     public GameObject attackZone;
     public OverheadMessage OverheadText { get; protected set; }
+    public string ExperienceText
+    {
+        get
+        {
+            return $"( {experience} / {level * levelUpMultipler}  experience)";
+        }
+    }
     private List<GameObject> clickZones = new List<GameObject>();
 
 
     //Variables
     public string charName;
-    public bool dead = false;
+    public bool Dead { get; protected set; } = false;
     public int level = 1;
     public int[] pos = new int[2];
     private int experience = 0;
@@ -31,58 +39,52 @@ public class CombatCharacter : MonoBehaviour
 
     //[0] for right hand, [1] for left hand
     public List<Item> equipment = new();
-    public Dictionary<string,int> skills = new();
+    public Dictionary<string, int> skills = new();
 
     //Basic stats
-    public int ST = 6; //CHANGE to 5 later //Strenght
-    public int PE = 3; //CHANGE to 5 later //Perception
-    public int EN = 6; //CHANGE to 5 later //Endurance
-    public int AG = 8; //CHANGE to 5 later //Agility
+    public int ST = 5; //Strenght
+    public int PE = 5; //Perception
+    public int EN = 5; //Endurance
+    public int AG = 5; //Agility
 
     //Secondary stats vatiables
-    public int totalOD; //Action points (ochki deystvija)
-    private int OD;
-    public int maxHP;
+    public int totalAP; //Action points (ochki deystvija)
+    private int AP; //Action points
+    public int MaxHP {get => 15 + (ST + (2 * EN));}
     public int AC; //Acmor class
     public int MD; //Melee damage
     public int bonusAC;
-    private int _hp;
 
     //Secondary stats properties
-    public int HP { get => _hp; set
+    private int _hp;
+    public int HP
+    {
+        get => _hp; protected set
         {
-            if (_hp==0)
-            {
-                _hp = value;
-            }
-            else if (_hp>value)
-            {
-                OverheadText?.ShowRed((value - _hp) + " HP");
-                _hp = value;
-            } else
-                _hp = value;
-            OverheadText?.ShowHP();
+            _hp = value;
+            if (_hp > MaxHP) _hp = MaxHP;
+        }
+    }
 
-        } }
- 
+    public Location loc { get => Location.GetLocation(pos); }
+
     //AI Stats
     public string ai = "";
 
     //Planning stuff
-    public int planningOD = 8;
+    public int PlanningAP {get; protected set;}
     public int[] planningPos = new int[2];
     public List<CombatAction> personalPlanningList = new List<CombatAction>();
 
-
-
-    //TEMP variables before have created item system
-
-
-    // Start is called before the first frame update
     void Awake()
     {
-        //print("Addint to cClist " + name);
         cCList.Add(this);
+    }
+
+    private void OnDestroy()
+    {
+        while (cCList.Contains(this)) 
+            cCList.Remove(this);
     }
 
     private void Start()
@@ -91,8 +93,9 @@ public class CombatCharacter : MonoBehaviour
         OverheadText = GetComponentInChildren<OverheadMessage>();
 
         CalculateSecStats();
-        ResetOD();
-        HP = maxHP;
+        ResetAP();
+        HP = MaxHP;
+        OverheadText.ShowHP();
 
         //TEMP setting places for Combatcharacters
         int i = cCList.IndexOf(this);
@@ -115,21 +118,18 @@ public class CombatCharacter : MonoBehaviour
         foreach (CombatCharacter checkingCharacter in cCList) {
             if (checkingCharacter.attackZone == null) readyCheck = false;
         }
-        
-        if (readyCheck)
-        {
-            //print("Ready Check sucsessful for "+cCList[i].name);   
-            CombatCharacter.cCList[Status.player].StartPlanning();
-        }
-            
 
+        if (readyCheck && Status.Turn == 0)
+        {
+            print("Ready Check sucsessful for " + cCList.Count + ". StartingPlanning for Player N" + Status.Player);
+            CombatCharacter.cCList[Status.Player].StartPlanning();
+        }
     }
 
     private void CalculateSecStats()
     {
-        if (ST == 0) return; //Check for NPC
-        totalOD = (AG / 2) + 5;
-        maxHP = 15 + (ST + (2 * EN));
+        if (ai != "") return; //Check for NPC
+        totalAP = (AG / 2) + 5;
         AC = AG; //ADD here adding AC for armor
 
         //Calculating skills
@@ -206,26 +206,17 @@ public class CombatCharacter : MonoBehaviour
 
     public void ResetPlanning()
     {
-        planningOD = totalOD;
+        PlanningAP = totalAP;
         planningPos[0] = pos[0];
         planningPos[1] = pos[1];
         this.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
     }
 
-    public void StartPlanning(bool start = true)
+    public virtual void StartPlanning(bool start = true)
     {
-        if (start && this.ai != "")
-        {
-            if (!dead)
-            {
-                print("I want to start AI");
-                Scripts.Ai(this);
-                print("AI have finished work");
-            }
-            Status.NextPlayer();
-            return;
-        }
-
+        UserInterface.Instance.UpdateAP(this);
+        UserInterface.Instance.ShowWeaponStats();
+        UserInterface.Instance.RefreshCharInfo();
         for (int i = 0; i < clickZones.Count; i++)
         {
 
@@ -252,7 +243,7 @@ public class CombatCharacter : MonoBehaviour
                 if (check)
                 {
                     cz.SetActive(true);
-                    cz.GetComponent<ClickArea>().costOD = Location.map[xCurrent, yCurrent].od;
+                    cz.GetComponent<ClickArea>().costAP = Location.map[xCurrent, yCurrent].AP;
                 }
             }
             else
@@ -262,13 +253,22 @@ public class CombatCharacter : MonoBehaviour
         foreach (CombatCharacter cC in CombatCharacter.cCList)
         {
             cC.attackZone.SetActive(start);
-            if (cC == this)
+            if (cC == this || cC.ai=="")
             {
                 cC.attackZone.SetActive(false);
             }
         }
-
     }
+	
+	public void GetDamage(int damage) {
+		damage = damage < 0? 0 : damage;
+		HP -= damage;
+		if (HP<=0)
+        {
+            Dead=true;
+			
+		}
+	}
 
     public void GetExperience(NonPlayerCharacter killedNPC)
     {
@@ -279,11 +279,12 @@ public class CombatCharacter : MonoBehaviour
             experience -= level * levelUpMultipler;
             level++;
 
+            string leveuUpText = "Level Up !!! \n";
             int randomStart = 0;
             int statSum = ST + PE + EN + AG;
             if (statSum >= 40) randomStart++; 
 
-            switch (Random.Range(randomStart, 4))
+            switch (Random.Range(randomStart, 2))
             {
                 case 0:
                     //Improving stats
@@ -296,7 +297,7 @@ public class CombatCharacter : MonoBehaviour
                     if ((randomResult > ST) && (randomResult <= ST+PE))
                     {
                         if (PE < 10) PE++;
-                        else randomResult = ST+PE+ 1;
+                        else randomResult = ST+PE+1;
                     }
                     if ((randomResult > ST+PE) && (randomResult <= ST+PE+EN))
                     {
@@ -311,66 +312,62 @@ public class CombatCharacter : MonoBehaviour
                         else EN++;
                     }
                     CalculateSecStats();
+                    leveuUpText += "Main stat boosted!";
                     break;
                 case 1:
                     int randomResult1 = Random.Range(0, 10);
+                    int randomWeapon = Random.Range(0, 2);
+                    leveuUpText += equipment[randomWeapon].itemName + " damage boosted!";
+
+
                     if (randomResult1==0)
                     {
-                        equipment[0].BoostDamage("multipler");
+                        equipment[randomWeapon].BoostDamage("multipler");
                     } else if (randomResult1 < 5)
                     {
-                        equipment[0].BoostDamage("dice", 3);
+                        equipment[randomWeapon].BoostDamage("dice", 2);
                     } else
-                        equipment[0].BoostDamage();
-
+                        equipment[randomWeapon].BoostDamage();
+                    
                     break;
-                case 2:
-                    int randomResult2 = Random.Range(0, 10);
-                    if (randomResult2 == 0)
-                    {
-                        equipment[0].BoostDamage("multipler");
-                    }
-                    else if (randomResult2 < 5)
-                    {
-                        equipment[0].BoostDamage("dice", 3);
-                    }
-                    else
-                        equipment[0].BoostDamage();
-                    break;
-                /*case 3:    
+                /*case 2:    
                     equipment[3].BoostArmor();
                     break;*/
             }
-
+            HP += EN / levelUpHealDevider;
+            print(charName + " " + leveuUpText);
+            OverheadText.ShowGreen(leveuUpText);
         }
+        UserInterface.Instance.RefreshCharInfo(this);
     }
 
-    public void ResetOD()
+    public void ResetAP()
     {
-        OD = totalOD;
+        AP = totalAP;
         bonusAC = 0;
 
     }
 
-    public bool SpendOD(int cost, bool isPlanning = false)
+    public bool SpendAP(int cost, bool isPlanning = false)
     {
         if (isPlanning == false)
         {
-            if (OD < cost)
+            if (AP < cost)
                 return false;
             else
             {
-                OD -= cost;
+                AP -= cost;
                 return true;
             }
         }
         else
         {
-            if (planningOD < cost)
+            if (PlanningAP < cost)
                 return false;
             else
             {
-                planningOD -= cost;
+                PlanningAP -= cost;
+                UserInterface.Instance.UpdateAP(this);
                 return true;
             }
         }
@@ -385,9 +382,9 @@ public class CombatCharacter : MonoBehaviour
             return;
         }
 
-        int oDcost = Location.map[x, y].od;
+        int oDcost = Location.map[x, y].AP;
 
-        if ((planningOD - oDcost) < 0) return;
+        if ((PlanningAP - oDcost) < 0) return;
 
         //Creating planning combat action
         //print("Triying to add move action to " + x + " " + y);
@@ -433,14 +430,14 @@ public class CombatCharacter : MonoBehaviour
                 if (check)
                 {
                     cz.SetActive(true);
-                    cz.GetComponent<ClickArea>().costOD = Location.map[xCurrent, yCurrent].od;
+                    cz.GetComponent<ClickArea>().costAP = Location.map[xCurrent, yCurrent].AP;
                 }
                 else
                     cz.SetActive(false);
             }
         }
 
-        /*if (planningOD == 0) 
+        /*if (planningAP == 0) 
             Status.NextPlayer();*/
 
     }
@@ -455,16 +452,17 @@ public class CombatCharacter : MonoBehaviour
         if (skills[skillname] >= 300)
             return;
 
-        float chanse = 1-(float)(skills[skillname]/300);
+        float chanse = 1.0f-((float)skills[skillname]/300.0f);
 
         chanse = Mathf.Pow(chanse, difficalty);
         float roll = Random.value;
         if (roll<chanse)
         {
             skills[skillname]++;
-            print("Skill " + skillname + "'v improved to "+skills[skillname]);
-        }
-            
+            //print("Skill " + skillname + "'v improved to "+skills[skillname]);
+            OverheadText.ShowGreen(skillname + " " + skills[skillname] + " +1");
+        } else
+            print("Skill " + skillname + "'v not improved. Chanse " + chanse + " < roll "+roll);
     }
     /*public void DeathProtocol()
     {

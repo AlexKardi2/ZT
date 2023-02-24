@@ -11,7 +11,7 @@ public class Movie : MonoBehaviour
     private GameObject bullet;
 
     //Settings for the movie
-    int divider = 200;
+    int divider = 100;
     int numenator = 0;
     Vector3 summator;
 
@@ -26,49 +26,36 @@ public class Movie : MonoBehaviour
     void Update()
     {
  
-        if (Status.current != "movie") return;
+        if (Status.Current != "movie") return;
+        CombatAction thisAction = combatLog[Status.MovieAct];
 
-        if (combatLog[Status.playAct].action == "move")
+        if (thisAction.action == "move")
         {
-            CombatAction thisAction = combatLog[Status.playAct]; 
+
             if (summator == Vector3.zero)
             {
                 //print("Action"+Status.playAct+" moving to "+thisAction.place[0]+" "+ thisAction.place[1]);
                 
-                summator.x = (CoordArray.cArray[(combatLog[Status.playAct].place[0]), (combatLog[Status.playAct].place[1]), 0] - combatLog[Status.playAct].subject.transform.position.x) / divider;
-                summator.y = (CoordArray.cArray[(combatLog[Status.playAct].place[0]), (combatLog[Status.playAct].place[1]), 1] - combatLog[Status.playAct].subject.transform.position.y) / divider;
-
-
+                summator.x = (CoordArray.cArray[(combatLog[Status.MovieAct].place[0]), (combatLog[Status.MovieAct].place[1]), 0] - combatLog[Status.MovieAct].subject.transform.position.x) / divider;
+                summator.y = (CoordArray.cArray[(combatLog[Status.MovieAct].place[0]), (combatLog[Status.MovieAct].place[1]), 1] - combatLog[Status.MovieAct].subject.transform.position.y) / divider;
             }
 
-            combatLog[Status.playAct].subject.transform.position += summator;
+            combatLog[Status.MovieAct].subject.transform.position += summator;
 
             if (++numenator==divider)
             {
-                
-                //print("Action N" + Status.playAct + " is finished");
-                Status.playAct++;
                 numenator = 0;
                 summator = Vector3.zero;
-                
-                if (Status.playAct >= combatLog.Count)
-                {
-                    Status.NextTurn();
-                }
-                
-                
+                Status.NextMovieAct();
             }
             
         } 
-        else if (combatLog[Status.playAct].action == "attack")
+        else if (thisAction.action == "attack")
         {
-            CombatAction thisAction = combatLog[Status.playAct];
-            
             if (summator == Vector3.zero)
             {
                 Vector3 target;
 
-                //print("Action" + Status.playAct + ". " + thisAction.subject.name + " attacking " + thisAction.target.name);
                 if (thisAction.target == null)
                 {
                     target = new Vector3(CoordArray.cArray[thisAction.place[0], thisAction.place[1], 0], CoordArray.cArray[thisAction.place[0], thisAction.place[1], 1],0);
@@ -86,7 +73,7 @@ public class Movie : MonoBehaviour
                 bulletPosition.y += 0.1f;
                 bullet = Instantiate(bulletPrefab, bulletPosition, bulletPrefab.transform.rotation);
                 bullet.transform.LookAt(target);
-                //print(bullet.transform.rotation.eulerAngles);
+
                 int minus=1;
                 if (bullet.transform.rotation.eulerAngles.y < 180)
                     minus = -1;
@@ -99,28 +86,23 @@ public class Movie : MonoBehaviour
 
             if (++numenator == divider)
             {
-                //print("Action N" + Status.playAct + " is finished");
                 Destroy(bullet);
-                Status.playAct++;
+                if (thisAction.DamageDone > 0)
+                {
+                    thisAction.target.OverheadText.ShowRed("-" + thisAction.DamageDone);
+                    thisAction.target.OverheadText.ShowHP(thisAction.HPAfter);
+                }
                 numenator = 0;
                 summator = Vector3.zero;
 
-                if (Status.playAct >= combatLog.Count)
-                {
-                    Status.NextTurn();
-                }
-
-
+                Status.NextMovieAct();
             }
         }
-        else if (combatLog[Status.playAct].action == "wait")
+        else if (thisAction.action == "wait")
         {
-            Status.playAct++;
+            thisAction.subject.OverheadText.ShowGreen("+" + thisAction.apCost + " temporal AC");
+            Status.NextMovieAct();
 
-            if (Status.playAct >= combatLog.Count)
-            {
-                Status.NextTurn();
-            }
         }
         
     }

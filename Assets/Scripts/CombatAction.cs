@@ -4,33 +4,35 @@ using UnityEngine;
 
 public class CombatAction : MonoBehaviour
 {
-    static private float rangeBalansingParametr = 1; //Multiplies max ranges of weapons & characters. Basicly 2 for FalloutPNP. 
-    
     public string action;
     public CombatCharacter subject;
     public CombatCharacter target;
     //public CombatObject targetObject;
     public Item usedItem; 
     public int[] place = new int[2]; //[0] for X; [1] for Y
-    public int oDCost;
+    public int apCost;
     private int turn;
+
+    //For movie only
+    public int DamageDone { get; private set; } = 0;
+    public int HPAfter { get; private set; }
     
     public bool Move(CombatCharacter subj, int x, int y)
     {
         if (subj == null) return false;
-        oDCost = Location.map[x, y].od;
-        if (subj.SpendOD(oDCost, true))
+        apCost = Location.map[x, y].AP;
+        if (subj.SpendAP(apCost, true))
         {
             action = "move";
             place[0] = x;
             place[1] = y;
             subject = subj;
-            turn = Status.turn;
+            turn = Status.Turn;
             return true;
         }
         else
         {
-            print("PlanOD =" + subj.planningOD + "is less then costOD=" + oDCost);
+            print("PlanOD =" + subj.PlanningAP + "is less then costOD=" + apCost);
             print("Combat action haven't added");
             return false;
         }
@@ -46,15 +48,15 @@ public class CombatAction : MonoBehaviour
         else
             weapon = subj.equipment[0];
 
-        if (subj.SpendOD(weapon.odCost, true))
+        if (subj.SpendAP(weapon.apCost, true))
         {
             CombatAction thisAttack = new CombatAction();
-            thisAttack.turn = Status.turn;
+            thisAttack.turn = Status.Turn;
             thisAttack.action = "attack";
             thisAttack.subject = subj;
             thisAttack.target = obj;
             thisAttack.usedItem = weapon;
-            thisAttack.oDCost = weapon.odCost;
+            thisAttack.apCost = weapon.apCost;
             subj.personalPlanningList.Add(thisAttack);
             return true;
         }
@@ -63,16 +65,16 @@ public class CombatAction : MonoBehaviour
         
     }
 
-    public static bool Wait(CombatCharacter subj, int oDcost=2)
+    public static bool Wait(CombatCharacter subj, int apCost=2)
     {
-        if ((subj == null) || (oDcost < 1))
+        if ((subj == null) || (apCost < 1))
             return false;
 
-        if (subj.SpendOD(oDcost, true))
+        if (subj.SpendAP(apCost, true))
         {
             CombatAction thisAction = new CombatAction();
-            thisAction.turn = Status.turn;
-            thisAction.oDCost = oDcost;
+            thisAction.turn = Status.Turn;
+            thisAction.apCost = apCost;
             thisAction.action = "wait";
             thisAction.subject = subj;
 
@@ -114,20 +116,19 @@ public class CombatAction : MonoBehaviour
     {
         List<CombatAction> log = Status.combatLog;
 
-        if ((log.Count != 0)&&(log[(log.Count - 1)].turn >= Status.turn))
+        if ((log.Count != 0)&&(log[(log.Count - 1)].turn >= Status.Turn))
         {
-            print("ERROR! Previous turn " + log[(log.Count - 1)].turn + ">= current turn " + Status.turn);
+            print("ERROR! Previous turn " + log[(log.Count - 1)].turn + ">= current turn " + Status.Turn);
             return;
         }
         else
         {
-            //ADD here adding Set action for every life combat character (or not)
-            print("It's OK with battle log");
+            //ADD here adding "Set" action for every life combat character (or not)
         }
 
         foreach (CombatAction cA in pList)
         {
-            if (cA.subject.dead == true)
+            if (cA.subject.Dead == true)
             {
                 cA.action = "skip";
                 continue;
@@ -151,7 +152,7 @@ public class CombatAction : MonoBehaviour
                         print("Moving to " + cA.place[0] + " " + cA.place[1] + " but " + cC.name + "is there");
                     }
                 }
-                checkList = checkList && cA.subject.SpendOD(cA.oDCost);
+                checkList = checkList && cA.subject.SpendAP(cA.apCost);
 
                 if (checkList)
                 {
@@ -168,14 +169,8 @@ public class CombatAction : MonoBehaviour
                     print("You haven't this weapon to use !!");
                     continue;
                 }
-                
-                int range = 1;
-                if (weapon.rangedAttack)
-                {
-                    int weaponRange = (int)(weapon.range * (1 / rangeBalansingParametr));
-                    int characterRange = (int)(cA.subject.PE * rangeBalansingParametr) - 1;
-                    range = Mathf.Max(weaponRange, characterRange);
-                }
+
+                int range = (weapon.rangedAttack) ? weapon.Range : 1;
 
                 if (cA.target == null)
                 {
@@ -187,55 +182,46 @@ public class CombatAction : MonoBehaviour
                 if (range < Scripts.FindDistance(cA.subject.pos, cA.target.pos))
                     checkList=false;
 
-                //ADD check for obstacle, change target to object if u need
+                //TODO ADD check for obstacle, change target to object if u need
                 
                 if (!checkList)
                     continue;
 
-                int oDcost = Mathf.Max(cA.oDCost, weapon.odCost);
+                int oDcost = Mathf.Max(cA.apCost, weapon.apCost);
 
-                if (checkList && cA.subject.SpendOD(oDcost))
+                if (checkList && cA.subject.SpendAP(oDcost))
                 {
                     log.Add(cA);
 
-                    int hitChanse = cA.subject.skills[weapon.skillname];
-                    // ADD if (cA.target.ai != "") cA.target.CheckAC();
-                    hitChanse -= cA.target.AC;
-                    hitChanse -= cA.target.bonusAC;
+                    int hitChanse = Scripts.HitChanse(cA.subject, cA.target, cA.usedItem);
 
                     if (Random.Range(0, 100) < hitChanse)
                     {
-                        int damage = weapon.damage;
-                        cA.target.HP -= damage;
-                        print(cA.target.name + "'s got " + damage + " damage. Hit chance was " + hitChanse);
-                        if (cA.target.HP <= 0)
-                        {
-                            //cA.target.HP=0;
-                            cA.target.dead = true;
-                            if (cA.target.ai!="")
-                            {
-                                NonPlayerCharacter npcTarget = (NonPlayerCharacter)cA.target;
-                                npcTarget.DeathProtocol();
-                                cA.subject.GetExperience(npcTarget);
-                            }
-                            //Add NPC death protocol ))
-                            //Add Game over protocol ))
-
-                        }
+                        int damage = weapon.Damage;
+                        bool deadBeforeDamage = cA.target.Dead;
+                        cA.target.GetDamage(damage);
+                        //print(cA.target.name + "'s got " + damage + " damage. Hit chance was " + hitChanse);
+                        cA.DamageDone = damage;
+                        cA.HPAfter = cA.target.HP;
+						if ((cA.target.Dead != deadBeforeDamage) && cA.target.ai!="")
+						{
+							NonPlayerCharacter npcTarget = (NonPlayerCharacter)cA.target;
+							cA.subject.GetExperience(npcTarget);
+						}
                     }
-                    else
+                    else  
                     {
-                        print(cA.subject.name + " have missed ((( HitChanse was " + hitChanse);
-                        if (cA.subject.ai=="")
+                        //print(cA.subject.name + " have missed ((( HitChanse was " + hitChanse);
+                        if (cA.subject.ai=="" && Location.Distance(cA.subject.pos, cA.target.pos) <= (cA.subject.PE - 1) )//TODO Think may be delete this PE check if (especially if BoostSkill difficulty is high enough
                             cA.subject.BoostSkill(weapon.skillname);
                     }
                 }
             }
             else if (cA.action == "wait")
             {
-                if (cA.subject.SpendOD(cA.oDCost))
+                if (cA.subject.SpendAP(cA.apCost))
                 {
-                    cA.subject.bonusAC += cA.oDCost;
+                    cA.subject.bonusAC += cA.apCost;
                     log.Add(cA);
 
                     

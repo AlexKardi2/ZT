@@ -10,62 +10,138 @@ public class Status : MonoBehaviour
 
     public List<CombatAction> showCombatLog = combatLog;
 
-    public static string current = "planning";
+    public static string Current { get; private set; } = "planning"; //TODO change to "starting"
 
     //Variables for "movie" status
-
-    public static int playTurn = 0;
-    public static int playAct = 0;
+    public static int MovieAct { get; private set; } = 0;
 
     //Variables for "planning" status
-    public static int turn=0;
-    public static int player = 0;
+    public static int Turn { get; private set; } = 0;
+    public static int Player { get; private set; } = 0;
 
-    void Start()
+    //Technical use variables
+    private static GameManager gameManager;
+
+    void Awake()
     {
-        
+        gameManager = GetComponent<GameManager>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public static void NextMovieAct ()
     {
-        
+        MovieAct++;
+        if (MovieAct >= combatLog.Count)
+        {
+            Status.NextTurn();
+        }
     }
-
     public static void NextPlayer()
     {
-        CombatCharacter.cCList[player].ResetPlanning();
-        CombatCharacter.cCList[player].StartPlanning(false);
-        player++;
+        CombatCharacter.cCList[Player].ResetPlanning();
+        CombatCharacter.cCList[Player].StartPlanning(false);
+        Player++;
         
-        if (player<CombatCharacter.cCList.Count)
+        if (Player<CombatCharacter.cCList.Count)
         {
-            CombatCharacter.cCList[player].StartPlanning();
+            CombatCharacter.cCList[Player].StartPlanning();
         } else
         {
-            player = 0; //May be delete
-            
+            Player--;
+            Current = "performing";
+
             CombatAction.CreatePlanningList(planningList);
 
             CombatAction.Perform(planningList);
 
-            current = "movie";
+            Current = "movie";
         }
     }
 
-    public static void NextTurn()
+    private static void NextTurn()
     {
-        print("TURN IS FINISHED. Starting turn "+(turn+1));
-        turn++;
-        current = "planning";
+        print("TURN IS FINISHED. Starting turn "+(Turn+1));
+
+        //Cleaning map and spawning 
+        int totalEnemiesLevel=0;
+        int totalPlayersLevel=0;
+        
+        int deadSouls = CleanDeadBodies();
+        if (totalPlayersLevel == 0)
+        {
+            Current = "gameover";
+            gameManager.GameOver();
+            return;
+        }
+
+        SpawnEnemies(deadSouls);
+        UserInterface.Instance.RefreshLevelInfo();
+        Turn++;
 
         foreach (CombatCharacter cC in CombatCharacter.cCList)
         {
-            cC.ResetOD();
+            cC.ResetAP();
             cC.ResetPlanning();
         }
 
-        player = 0;
-        CombatCharacter.cCList[player].StartPlanning();
+        Player = 0;
+        Current = "planning";
+        CombatCharacter.cCList[Player].StartPlanning();
+
+        void SpawnEnemies(int minSpawnNumber)
+        {
+            if (minSpawnNumber < 1)
+                return;
+            int maxSpawnLevel = (totalPlayersLevel - totalEnemiesLevel) / minSpawnNumber;
+
+            if (totalEnemiesLevel>1)
+            {
+                float recuceSpawnChanse = 1.0f / maxSpawnLevel;
+                if (Random.value < recuceSpawnChanse)
+                    minSpawnNumber--;
+            }
+
+            for (int i = 0; i < minSpawnNumber; i++)
+            {
+                int npcSpawnLevel = Mathf.Min(Random.Range(1, (totalPlayersLevel - totalEnemiesLevel + 1)), maxSpawnLevel);
+                totalEnemiesLevel += npcSpawnLevel;
+                NonPlayerCharacter.SpawnRat(npcSpawnLevel);
+            }
+
+            if (totalEnemiesLevel < totalPlayersLevel)
+            {
+                float additionalSpawnChanse = 1.0f - ((float)totalEnemiesLevel / totalPlayersLevel);
+                float spawnRandom = Random.value;
+                if (spawnRandom < additionalSpawnChanse)
+                {
+                    int npcSpawnLevel = Mathf.Min(Random.Range(1, (totalPlayersLevel - totalEnemiesLevel + 1)), maxSpawnLevel);
+                    NonPlayerCharacter.SpawnRat(npcSpawnLevel);
+                    print($"Was spawned additional NPC. Chanse was {additionalSpawnChanse}, random rolled {spawnRandom}");
+                }
+                else
+                    print($"Additional NPC haven't spawned. Chanse was {additionalSpawnChanse}, random rolled {spawnRandom}");
+            }
+
+        }
+        int CleanDeadBodies()
+        {
+            int cleanedBodies = 0;
+            foreach (CombatCharacter cChar in CombatCharacter.cCList)
+            {
+                if (cChar.ai == "" && !cChar.Dead)
+                    totalPlayersLevel += cChar.level;
+                else
+                {
+                    if (cChar.Dead)
+                    {
+                        Destroy(cChar.transform.gameObject);
+                        cleanedBodies++;
+                    }
+                    else
+                        totalEnemiesLevel += cChar.level;
+                }
+            }
+            return cleanedBodies;
+        }
     }
 }
+

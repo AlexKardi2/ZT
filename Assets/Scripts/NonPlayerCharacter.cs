@@ -5,31 +5,29 @@ using UnityEngine;
 public class NonPlayerCharacter : CombatCharacter
 {
     //Variables for NPC
-
+    private int _maxHP;
+    public new int MaxHP { get => _maxHP; private set => _maxHP=value;}
 
     // Start is called before the first frame update
     private void Start()
     {
+        if (attackZone != null) return;
+        
         //Getting components to technical use variables
         OverheadText = GetComponentInChildren<OverheadMessage>();
 
-        ResetOD();
-        HP = maxHP;
+        ResetAP();
+        HP = MaxHP;
 
-        //TEMP setting places for Combatcharacters
-        int i = cCList.IndexOf(this);
-        CombatCharacter.cCList[i].pos[0] = i;
-        CombatCharacter.cCList[i].pos[1] = i;
+        pos = SpawnPosition();
 
         //This is not temporary part
         ResetPlanning();
-        CombatCharacter.cCList[i].transform.position = new Vector3(CoordArray.cArray[CombatCharacter.cCList[i].pos[0], CombatCharacter.cCList[i].pos[1], 0], CoordArray.cArray[CombatCharacter.cCList[i].pos[0], CombatCharacter.cCList[i].pos[1], 1], 0);
+        transform.position = new Vector3(CoordArray.cArray[pos[0], pos[1], 0], CoordArray.cArray[pos[0], pos[1], 1], 0);
 
         //temp creating attackzone
         attackZone = Instantiate<GameObject>(prefabClickZone);
-        if (attackZone != null)
-            print("AZone for " + name + " is created");
-        else
+        if (attackZone == null)
             print("Error!!! AZone for " + name + "isn't created");
         attackZone.transform.parent = this.transform;
         attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
@@ -46,21 +44,59 @@ public class NonPlayerCharacter : CombatCharacter
             if (checkingCharacter.attackZone == null) readyCheck = false;
         }
 
-        if (readyCheck)
+        if (readyCheck&& Status.Turn == 0)
         {
-            print("Ready Check sucsessful for " + cCList.Count);
-            CombatCharacter.cCList[Status.player].StartPlanning();
+            print("Ready Check sucsessful for " + cCList.Count+ ". StartingPlanning for Player N"+ Status.Player);
+            CombatCharacter.cCList[Status.Player].StartPlanning();
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void StartPlanning(bool start = true)
     {
-        
+        if (start && Status.Current=="planning")
+        {
+            if (!Dead)
+            {
+                Scripts.Ai(this);
+            }
+            Status.NextPlayer();
+        }
+    }
+
+    private int[] SpawnPosition()
+    {
+        int[] position = new int[2];
+        int side = Random.Range(0, 4);
+        switch (side) 
+        {
+            case 0:
+                position[0] = 0;
+                position[1] = Random.Range(0, Location.ySize);
+                break;
+            case 1:
+                position[0] = Location.xSize-1;
+                position[1] = Random.Range(0, Location.ySize);
+                break;
+            case 2:
+                position[0] = Random.Range(0, Location.xSize);
+                position[1] = 0;
+                break;
+            case 3:
+                position[0] = Random.Range(0, Location.xSize);
+                position[1] = Location.ySize - 1;
+                break;
+        }
+        if (Location.IsBusy(position[0], position[1]))
+            return SpawnPosition();
+        else
+            return position;
+
     }
 
     public static void SpawnRat(int level = 1)
     {
+        if (level < 1) return;
+        
         string ai = "rat";
         int maxHP = 10;
         int totalOD = 6;
@@ -76,13 +112,15 @@ public class NonPlayerCharacter : CombatCharacter
         GameObject npcGameObj = Instantiate(PrefabsList.instance.ratPrefab);
         NonPlayerCharacter npc = npcGameObj.GetComponent<NonPlayerCharacter>();
         npc.ai = ai;
-        npc.maxHP = maxHP;
-        npc.totalOD = totalOD;
+        npc.MaxHP = maxHP;
+        npc.totalAP = totalOD;
         npc.AC = AC;
+        npc.level = level;
 
         Item attack = new Item();
-        attack.range = damageRange;
-        attack.odCost = attackOD;
+        attack.itemName = "Bite";
+        attack.Range = damageRange;
+        attack.apCost = attackOD;
         attack.rangedAttack = rangedAttack;
         attack.SetDamage(damageMultipler, damageDise, damagePlus);
         attack.skillname = "npcattack";
@@ -94,17 +132,16 @@ public class NonPlayerCharacter : CombatCharacter
             npc.skills.Add(attack.skillname, 0);
         npc.skills[attack.skillname] = 75;
 
-        
         for (int i=1; i<level; i++)
         {
-            npc.maxHP += maxHP/2;
+            npc.MaxHP += maxHP/2;
             int randomStart = 0;
-            if (npc.totalOD >= (totalOD * 2))
+            if (npc.totalAP >= (totalOD * 2))
                 randomStart = 1;
             switch (Random.Range(randomStart, 4))
             {
                 case 0:
-                    npc.totalOD++;
+                    npc.totalAP++;
                     break;
                 case 1:
                     attack.BoostDamage();
@@ -117,6 +154,8 @@ public class NonPlayerCharacter : CombatCharacter
                     break;
             }
         }
+
+        npc.Start();
     }
 
     public void DeathProtocol ()

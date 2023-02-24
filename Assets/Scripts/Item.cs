@@ -4,15 +4,37 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
+    static private float rangeBalansingParametr = 1; //Multiplies max ranges of weapons & characters. Basicly 2 for FalloutPNP. 
+
     public static List<Item> items = new List<Item>();
-    
+
+    public string itemName;
     public bool rangedAttack = true;
     private int damageRandomTo = 6; //1dX (10 for 1d10)
     private int damageRandomMultipler = 1; //3 for 3d6
     private int damageAddition = 0; //5 for 2d8+5
 
-    public int range = 2;
-    public int odCost = 5;
+    public int _range = 2;
+    public int Range
+    {
+        get
+        {
+            return (int)(_range * (1 / rangeBalansingParametr));
+        }
+        set {
+            _range = value;
+        }
+        
+    }
+    public int apCost = 5;
+    public string DamageDiapason
+    {
+        get
+        {
+            return (damageRandomMultipler + damageAddition) + "-" + (damageRandomMultipler * damageRandomTo + damageAddition);
+        }
+    }
+
 
     public string skillname = "";
     
@@ -20,24 +42,27 @@ public class Item : MonoBehaviour
     void Awake()
     {
         Item thisItem=new Item();
+        thisItem.itemName = "Fist";
         thisItem.SetDamage(1,4,0);
-        thisItem.range = 1;
-        thisItem.odCost = 3;
+        thisItem.Range = 1;
+        thisItem.apCost = 3;
         thisItem.rangedAttack = false;
         thisItem.skillname = "unarmed";
         items.Add(thisItem);
 
         thisItem = new Item();
+        thisItem.itemName = "Rifle";
         thisItem.SetDamage(1, 8, 8);
-        thisItem.range = 19;
-        thisItem.odCost = 5;
+        thisItem.Range = 19;
+        thisItem.apCost = 5;
         thisItem.skillname = "guns";
         items.Add(thisItem);
 
         thisItem = new Item();
+        thisItem.itemName = "Knife";
         thisItem.SetDamage(1, 10, 0);
-        thisItem.range = 1;
-        thisItem.odCost = 3;
+        thisItem.Range = 1;
+        thisItem.apCost = 3;
         thisItem.rangedAttack = false;
         thisItem.skillname = "melee";
         items.Add(thisItem);
@@ -52,7 +77,7 @@ public class Item : MonoBehaviour
         
     }
 
-    public int damage
+    public int Damage
     {
         get
         {

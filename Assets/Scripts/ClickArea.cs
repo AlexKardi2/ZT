@@ -9,7 +9,7 @@ public class ClickArea : MonoBehaviour
     public int xCorrection;
     public int yCorrection;
     public CombatCharacter combatCharacter; //Subject for MOVE & target (object) for ATTACK
-    public int costOD; //for MOVE only
+    public int costAP; //for MOVE only
 
     private int xPlace;
     private int yPlace;
@@ -24,7 +24,7 @@ public class ClickArea : MonoBehaviour
     {
         if (action=="attack")
         {
-            combatCharacter.OverheadText.Show("To hit: __%");
+            combatCharacter.OverheadText.Show("To hit: "+ Scripts.HitChanse(CombatCharacter.cCList[Status.Player], combatCharacter)+"%");
         }
     }
 
@@ -33,42 +33,40 @@ public class ClickArea : MonoBehaviour
         combatCharacter.OverheadText.ShowHP();
     }
 
-    
+
     private void OnMouseDown()
     {
         //Start move action
-        if (action=="move")
+        if (action == "move")
         {
-            if (combatCharacter.planningOD >= costOD)
+            if (combatCharacter.PlanningAP >= costAP)
             {
                 xPlace = combatCharacter.planningPos[0] + xCorrection;
                 yPlace = combatCharacter.planningPos[1] + yCorrection;
                 combatCharacter.MovePlan(xPlace, yPlace);
             }
-        } else if (action== "attack")
+        }
+        else if (action == "attack")
         {
             //Check for and perform move action
             if (Input.GetKey(KeyCode.LeftControl) == true || Input.GetKey(KeyCode.RightControl) == true)
             {
-                CombatCharacter planningCharacter = CombatCharacter.cCList[Status.player];
+                CombatCharacter planningCharacter = CombatCharacter.cCList[Status.Player];
                 xPlace = combatCharacter.planningPos[0];
                 yPlace = combatCharacter.planningPos[1];
                 planningCharacter.MovePlan(xPlace, yPlace);
 
-            } else
-            {
-                
-                if (CombatAction.Attack(CombatCharacter.cCList[Status.player], combatCharacter))
-                {
-                    //print("ATTACKING " + combatCharacter.name);
-                   
-                }
-
             }
-            
+            else
+            {
+                if (CombatAction.Attack(CombatCharacter.cCList[Status.Player], combatCharacter))
+                {
+                    combatCharacter.OverheadText.ShowHP();
+                }
+            }
         }
 
-        if (CombatCharacter.cCList[Status.player].planningOD == 0)
+        if (CombatCharacter.cCList[Status.Player].PlanningAP == 0)
         {
             Status.NextPlayer();
         }
