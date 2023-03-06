@@ -10,7 +10,7 @@ public class Status : MonoBehaviour
 
     public List<CombatAction> showCombatLog = combatLog;
 
-    public static string Current { get; private set; } = "planning"; //TODO change to "starting"
+    public static string Current { get; private set; } = "starting";
 
     //Variables for "movie" status
     public static int MovieAct { get; private set; } = 0;
@@ -29,10 +29,13 @@ public class Status : MonoBehaviour
 
     public static void NextMovieAct ()
     {
-        MovieAct++;
-        if (MovieAct >= combatLog.Count)
+        if (Current == "movie")
         {
-            Status.NextTurn();
+            MovieAct++;
+            if (MovieAct >= combatLog.Count)
+            {
+                Status.NextTurn();
+            }
         }
     }
     public static void NextPlayer()
@@ -127,9 +130,14 @@ public class Status : MonoBehaviour
             int cleanedBodies = 0;
             foreach (CombatCharacter cChar in CombatCharacter.cCList)
             {
-                if (cChar.ai == "" && !cChar.Dead)
-                    totalPlayersLevel += cChar.level;
-                else
+                if (cChar.ai == "")
+                {
+                    if (!cChar.Dead)
+                    {
+                        totalPlayersLevel += cChar.level;
+                    }
+                }
+            else
                 {
                     if (cChar.Dead)
                     {

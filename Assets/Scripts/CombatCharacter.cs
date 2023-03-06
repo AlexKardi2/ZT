@@ -16,6 +16,7 @@ public class CombatCharacter : MonoBehaviour
     private int[] xOddCorrArray = new int[] { 1, 1, 1, 0, -1, 0 }; //for Odd row
     private int[] xEvenCorrArray = new int[] { 0, 1, 0, -1, -1, -1 }; //for Even row
     private int[] yCorrArray = new int[] { 1, 0, -1, -1, 0, 1 };
+    private bool isCreated = false;
     public GameObject prefabClickZone;
     public GameObject attackZone;
     public OverheadMessage OverheadText { get; protected set; }
@@ -26,6 +27,7 @@ public class CombatCharacter : MonoBehaviour
             return $"( {experience} / {level * levelUpMultipler}  experience)";
         }
     }
+    public int Experience { get => experience + level * levelUpMultipler;  }
     private List<GameObject> clickZones = new List<GameObject>();
 
 
@@ -56,8 +58,8 @@ public class CombatCharacter : MonoBehaviour
     public int bonusAC;
 
     //Secondary stats properties
-    private int _hp;
-    public int HP
+    protected int _hp;
+    public virtual int HP
     {
         get => _hp; protected set
         {
@@ -73,6 +75,8 @@ public class CombatCharacter : MonoBehaviour
 
     //Planning stuff
     public int PlanningAP {get; protected set;}
+    public int MeleeDamageBonus { get => ST > 5 ? ST - 5 : 1; }
+
     public int[] planningPos = new int[2];
     public List<CombatAction> personalPlanningList = new List<CombatAction>();
 
@@ -101,10 +105,6 @@ public class CombatCharacter : MonoBehaviour
         int i = cCList.IndexOf(this);
         CombatCharacter.cCList[i].pos[0] = i;
         CombatCharacter.cCList[i].pos[1] = i;
-        CombatCharacter.cCList[i].equipment.Add(null);
-        CombatCharacter.cCList[i].equipment.Add(null);
-        CombatCharacter.cCList[i].equipment[0] = Item.items[1];
-        CombatCharacter.cCList[i].equipment[1] = Item.items[2];
 
         //This is not temporary part
         ResetPlanning();
@@ -112,7 +112,7 @@ public class CombatCharacter : MonoBehaviour
         CombatCharacter.cCList[i].CreateClickZones();
         //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
 
-        //TEMP part continuing
+        /*/TEMP part continuing
         bool readyCheck=true;
         //print("Ready Check started for "+cCList.Count);
         foreach (CombatCharacter checkingCharacter in cCList) {
@@ -123,7 +123,38 @@ public class CombatCharacter : MonoBehaviour
         {
             print("Ready Check sucsessful for " + cCList.Count + ". StartingPlanning for Player N" + Status.Player);
             CombatCharacter.cCList[Status.Player].StartPlanning();
+        }*/
+    }
+
+    public bool FulfillCharacter(int st, int pe, int en, int ag, Item mainWeapon, Item offWeapon)
+    {
+        if (isCreated)
+            return false;
+
+        if (mainWeapon == null || offWeapon == null)
+            return false;
+
+        ST = st;
+        PE = pe;
+        EN = en;
+        AG = ag;
+
+        equipment.Add((Item)mainWeapon.Clone());
+        equipment.Add((Item)offWeapon.Clone());
+        /*
+        CombatCharacter.cCList[i].equipment.Add(null);
+        CombatCharacter.cCList[i].equipment.Add(null);
+        CombatCharacter.cCList[i].equipment[0] = Item.items[1];
+        CombatCharacter.cCList[i].equipment[1] = Item.items[2];
+        */
+        if (equipment[0].itemName!=mainWeapon.itemName || equipment[1].itemName != offWeapon.itemName)
+        {
+            print("ERROR! Weapon check faild on fullfilling created character.");
+            return false;
         }
+
+        isCreated = true;
+        return true;
     }
 
     private void CalculateSecStats()
@@ -214,6 +245,12 @@ public class CombatCharacter : MonoBehaviour
 
     public virtual void StartPlanning(bool start = true)
     {
+        if (Dead && start)
+        {
+            Status.NextPlayer();
+            return;
+        }
+
         UserInterface.Instance.UpdateAP(this);
         UserInterface.Instance.ShowWeaponStats();
         UserInterface.Instance.RefreshCharInfo();
@@ -266,7 +303,6 @@ public class CombatCharacter : MonoBehaviour
 		if (HP<=0)
         {
             Dead=true;
-			
 		}
 	}
 
@@ -315,20 +351,9 @@ public class CombatCharacter : MonoBehaviour
                     leveuUpText += "Main stat boosted!";
                     break;
                 case 1:
-                    int randomResult1 = Random.Range(0, 10);
                     int randomWeapon = Random.Range(0, 2);
+                    equipment[randomWeapon].BoostDamage();
                     leveuUpText += equipment[randomWeapon].itemName + " damage boosted!";
-
-
-                    if (randomResult1==0)
-                    {
-                        equipment[randomWeapon].BoostDamage("multipler");
-                    } else if (randomResult1 < 5)
-                    {
-                        equipment[randomWeapon].BoostDamage("dice", 2);
-                    } else
-                        equipment[randomWeapon].BoostDamage();
-                    
                     break;
                 /*case 2:    
                     equipment[3].BoostArmor();

@@ -433,19 +433,16 @@ MonoBehaviour:
   level: 1
   pos: 0300000003000000
   usesOffHand: 0
-  equipment: []
   ST: 5
   PE: 5
   EN: 5
   AG: 5
   totalAP: 0
-  maxHP: 0
   AC: 0
   MD: 0
   bonusAC: 0
   ai: 
   planningPos: 0000000000000000
-  personalPlanningList: []
 --- !u!1 &6359727020793842933
 GameObject:
   m_ObjectHideFlags: 0

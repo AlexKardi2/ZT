@@ -7,9 +7,12 @@ public class Preparations : MonoBehaviour
     public List<CombatAction> combatLog = new List<CombatAction>();
 
 
-    // Start is called before the first frame update
-    
-    
+
+    void Awake()
+    {
+        Item.LoadItems();
+    }
+
     void Start()
     {
         /*Setting up starting places & othre stats for chars
@@ -47,12 +50,9 @@ public class Preparations : MonoBehaviour
 
         //print("x" + CoordArray.cArray[7, 2, 0] + " y" + CoordArray.cArray[7, 2, 1]);
 
-        NonPlayerCharacter.SpawnRat();
+        //NonPlayerCharacter.SpawnRat(1);
     }
 
     // Update is called once per frame
-    void Update()
-    {
 
-    }
 }

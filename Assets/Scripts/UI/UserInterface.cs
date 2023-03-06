@@ -9,7 +9,7 @@ public class UserInterface : MonoBehaviour
     public static UserInterface Instance { get; private set; }
     [SerializeField] private TextMeshProUGUI actionPointsText;
     [SerializeField] private TextMeshProUGUI weaponInfoField;
-    [SerializeField] private TextMeshProUGUI levelInfoField;
+    [SerializeField] private TextMeshProUGUI scoreInfoField;
     [SerializeField] private TextMeshProUGUI playerInfoField;
 
     void Awake()
@@ -37,22 +37,22 @@ public class UserInterface : MonoBehaviour
         }
     }
 
+    public void ShowWeaponStats() => ShowWeaponStats(CombatCharacter.cCList[Status.Player]);
 
-    public void ShowWeaponStats()
+    public void ShowWeaponStats(CombatCharacter attacker)
     {
-        if (!CombatCharacter.cCList[Status.Player].usesOffHand)
+        Item weapon;
+        if (attacker.usesOffHand)
         {
-            ShowWeaponStats(CombatCharacter.cCList[Status.Player].equipment[0]);
-        }
-        else
+            weapon = attacker.equipment[1];
+        } else
         {
-            ShowWeaponStats(CombatCharacter.cCList[Status.Player].equipment[1]);
+            weapon = attacker.equipment[0];
         }
-    }
-    public void ShowWeaponStats(Item weapon)
-    {
+
         string weaponText = $"{weapon.itemName} [ {weapon.apCost} AP ]\n";
-        weaponText += "Damage: " + weapon.DamageDiapason + " ";
+        int meleeDamageBonus = (weapon.rangedAttack) ? 0 : attacker.MeleeDamageBonus;
+        weaponText += "Damage: " + weapon.FormDamageDiapason(meleeDamageBonus) + " ";
         if (weapon.rangedAttack)
             weaponText += "Range: "+weapon.Range + "\n";
         else
@@ -64,18 +64,24 @@ public class UserInterface : MonoBehaviour
     public void RefreshLevelInfo()
     {
         int totalEnemiesLevel = 0;
-        string levelInfoText = "";
+        int score = 0;
+        string scoreInfoText = "";
         foreach (CombatCharacter cChar in CombatCharacter.cCList)
         {
             if (cChar.ai == "")
-                levelInfoText += cChar.charName + " " + cChar.level + " lvl ";
+            {
+                scoreInfoText += cChar.charName + " " + cChar.level + " lvl ";
+                score += cChar.Experience;
+            }
+                
             else if (!cChar.Dead)
             {
                 totalEnemiesLevel += cChar.level;
             }
         }
-        levelInfoText += "\nEnemyes "+totalEnemiesLevel+" total lvl";
-        levelInfoField.text = levelInfoText;
+        scoreInfoText += "\nEnemyes "+totalEnemiesLevel+" total lvl";
+        scoreInfoText += "\nScore: " + score;
+        scoreInfoField.text = scoreInfoText;
     }
 
     public void RefreshCharInfo() => RefreshCharInfo(CombatCharacter.cCList[Status.Player]);
@@ -83,7 +89,7 @@ public class UserInterface : MonoBehaviour
     {
         string charInfoText = $"{player.charName} [ {player.level} lvl ]\n"
                             + player.ExperienceText+"\n\n"
-                            + $"ST {player.ST} [+0 melee damage]\n"  //TODO Add melee damage
+                            + $"ST {player.ST} [+{player.MeleeDamageBonus} melee damage]\n"  //TODO Add melee damage
                             + $"PE {player.PE} [{player.PE-1} aim shoot range]\n" //TODO Change range formula to Property??
                             + $"EN {player.EN} [{player.MaxHP} Max HP]\n"
                             + $"AG {player.AG} [{player.totalAP} AP, {player.AC} AC]";

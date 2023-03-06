@@ -92,7 +92,7 @@ public class Scripts : MonoBehaviour
         CombatCharacter enemy=null;
         float priority = 0f;
         foreach (CombatCharacter cC in CombatCharacter.cCList) {
-            if (cC.ai != "") continue;
+            if (cC.ai != ""||cC.Dead) continue;
             float currentPriority = (float)Location.Distance(bot.pos, cC.pos)*cC.HP/cC.MaxHP;
             if (enemy==null || currentPriority<priority) {
                 enemy = cC;
@@ -108,23 +108,56 @@ public class Scripts : MonoBehaviour
         
         while (enoughOD)
         {
-            if (Scripts.FindDistance(bot.planningPos,enemy.pos)<=1) {
-                enoughOD = CombatAction.Attack(bot, enemy);
-            } else
+            int distanceToTarget = Location.Distance(bot.planningPos, enemy.pos);
+            if (distanceToTarget <= 0)
             {
-                bool check=false;
+                enoughOD = CombatAction.Attack(bot, enemy);
+            }
+            else if (distanceToTarget == 1)
+            {
+                //TODO make AI more universal with switching weapons
+                int attacksWithoutMove = bot.PlanningAP / bot.equipment[0].apCost;
+                if (attacksWithoutMove > 0)
+                {
+                    int attacksAfterMove = (bot.PlanningAP - Location.map[enemy.pos[0], enemy.pos[1]].AP) / bot.equipment[0].apCost;
+                    float chanseToMove = (float)attacksAfterMove / attacksWithoutMove;
+                    if (Random.value < chanseToMove)
+                    {
+                        enoughOD = Move(bot, enemy.pos[0], enemy.pos[1]);
+                    }
+                    else
+                    {
+                        enoughOD = CombatAction.Attack(bot, enemy);
+                    }
+                } else
+                {
+                    enoughOD = Move(bot, enemy.pos[0], enemy.pos[1]);
+                    if (!enoughOD && bot.PlanningAP > 0)
+                        CombatAction.Wait(bot, bot.PlanningAP);
+                }
+            }
+            else
+            {
                 int[] moveCoordinates = Scripts.TileToTarget(bot.planningPos, enemy.pos);
-                bot.personalPlanningList.Add(new CombatAction());
-                enoughOD= bot.personalPlanningList[(bot.personalPlanningList.Count - 1)].Move(bot, moveCoordinates[0], moveCoordinates[1]);
-                if (!enoughOD) bot.personalPlanningList.RemoveAt(bot.personalPlanningList.Count - 1);
-
-                //Moving plan position and sprite
-                bot.planningPos[0] = moveCoordinates[0];
-                bot.planningPos[1] = moveCoordinates[1];
+				enoughOD=Move(bot, moveCoordinates[0], moveCoordinates[1]);
             }
             i++;
-            if (i > 10) break;  
+            if (i > 20) break;  
         }
+		
+		bool Move (CombatCharacter bot, int x, int y) {
+			    
+				bot.personalPlanningList.Add(new CombatAction());
+                bool movePlanned = bot.personalPlanningList[(bot.personalPlanningList.Count - 1)].Move(bot, x, y);
+                if (movePlanned) {
+					//Moving plan position and sprite
+					bot.planningPos[0] = x;
+					bot.planningPos[1] = y;
+				}
+				else
+					bot.personalPlanningList.RemoveAt(bot.personalPlanningList.Count - 1);
+				return movePlanned;
+		}
     }
 
     public static int HitChanse (CombatCharacter subject, CombatCharacter target, Item weapon)

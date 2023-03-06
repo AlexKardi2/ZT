@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CombatAction : MonoBehaviour
+public class CombatAction
 {
     public string action;
     public CombatCharacter subject;
@@ -32,8 +32,6 @@ public class CombatAction : MonoBehaviour
         }
         else
         {
-            print("PlanOD =" + subj.PlanningAP + "is less then costOD=" + apCost);
-            print("Combat action haven't added");
             return false;
         }
     }
@@ -118,7 +116,7 @@ public class CombatAction : MonoBehaviour
 
         if ((log.Count != 0)&&(log[(log.Count - 1)].turn >= Status.Turn))
         {
-            print("ERROR! Previous turn " + log[(log.Count - 1)].turn + ">= current turn " + Status.Turn);
+            Debug.Log("ERROR! Previous turn " + log[(log.Count - 1)].turn + ">= current turn " + Status.Turn);
             return;
         }
         else
@@ -148,8 +146,8 @@ public class CombatAction : MonoBehaviour
                     if ((cC.pos[0] == cA.place[0]) && (cC.pos[1] == cA.place[1]))
                     {
                         checkList = false;
-                        print("There is another character on the way");
-                        print("Moving to " + cA.place[0] + " " + cA.place[1] + " but " + cC.name + "is there");
+                        Debug.Log("There is another character on the way");
+                        Debug.Log("Moving to " + cA.place[0] + " " + cA.place[1] + " but " + cC.name + "is there");
                     }
                 }
                 checkList = checkList && cA.subject.SpendAP(cA.apCost);
@@ -166,7 +164,7 @@ public class CombatAction : MonoBehaviour
             {
                 Item weapon = cA.usedItem;
                 if ((cA.subject.equipment[0]!=weapon)&&(cA.subject.equipment[1] != weapon)) {
-                    print("You haven't this weapon to use !!");
+                    Debug.Log("You haven't this weapon to use !!");
                     continue;
                 }
 
@@ -198,6 +196,8 @@ public class CombatAction : MonoBehaviour
                     if (Random.Range(0, 100) < hitChanse)
                     {
                         int damage = weapon.Damage;
+                        if (!weapon.rangedAttack)
+                            damage += cA.subject.MeleeDamageBonus;
                         bool deadBeforeDamage = cA.target.Dead;
                         cA.target.GetDamage(damage);
                         //print(cA.target.name + "'s got " + damage + " damage. Hit chance was " + hitChanse);
@@ -227,7 +227,7 @@ public class CombatAction : MonoBehaviour
                     
                 }
                 else
-                    print(cA.subject.name + " can't wait anymore *(");
+                    Debug.Log(cA.subject.name + " can't wait anymore *(");
             }
         }
     }

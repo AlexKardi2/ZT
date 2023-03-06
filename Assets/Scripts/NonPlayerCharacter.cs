@@ -7,7 +7,14 @@ public class NonPlayerCharacter : CombatCharacter
     //Variables for NPC
     private int _maxHP;
     public new int MaxHP { get => _maxHP; private set => _maxHP=value;}
-
+    public override int HP
+    {
+        get => _hp; protected set
+        {
+            _hp = value;
+            if (_hp > MaxHP) _hp = MaxHP;
+        }
+    }
     // Start is called before the first frame update
     private void Start()
     {
@@ -37,7 +44,7 @@ public class NonPlayerCharacter : CombatCharacter
 
         //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
 
-        //TEMP part continuing
+        /*/TEMP part continuing
         bool readyCheck = true;
         foreach (CombatCharacter checkingCharacter in cCList)
         {
@@ -48,7 +55,7 @@ public class NonPlayerCharacter : CombatCharacter
         {
             print("Ready Check sucsessful for " + cCList.Count+ ". StartingPlanning for Player N"+ Status.Player);
             CombatCharacter.cCList[Status.Player].StartPlanning();
-        }
+        }*/
     }
 
     public override void StartPlanning(bool start = true)
@@ -99,7 +106,7 @@ public class NonPlayerCharacter : CombatCharacter
         
         string ai = "rat";
         int maxHP = 10;
-        int totalOD = 6;
+        int totalAP = 6;
         int AC = 5;
         
         bool rangedAttack = false;
@@ -107,20 +114,20 @@ public class NonPlayerCharacter : CombatCharacter
         int damageDise = 4;
         int damagePlus = 0;
         int damageRange = 1;
-        int attackOD=3;
+        int attackAP=3;
 
         GameObject npcGameObj = Instantiate(PrefabsList.instance.ratPrefab);
         NonPlayerCharacter npc = npcGameObj.GetComponent<NonPlayerCharacter>();
         npc.ai = ai;
         npc.MaxHP = maxHP;
-        npc.totalAP = totalOD;
+        npc.totalAP = totalAP;
         npc.AC = AC;
         npc.level = level;
 
         Item attack = new Item();
         attack.itemName = "Bite";
         attack.Range = damageRange;
-        attack.apCost = attackOD;
+        attack.apCost = attackAP;
         attack.rangedAttack = rangedAttack;
         attack.SetDamage(damageMultipler, damageDise, damagePlus);
         attack.skillname = "npcattack";
@@ -136,9 +143,9 @@ public class NonPlayerCharacter : CombatCharacter
         {
             npc.MaxHP += maxHP/2;
             int randomStart = 0;
-            if (npc.totalAP >= (totalOD * 2))
+            if (npc.totalAP >= (totalAP * 2))
                 randomStart = 1;
-            switch (Random.Range(randomStart, 4))
+            switch (Random.Range(randomStart, 3))
             {
                 case 0:
                     npc.totalAP++;
@@ -147,10 +154,7 @@ public class NonPlayerCharacter : CombatCharacter
                     attack.BoostDamage();
                     break;
                 case 2:
-                    attack.BoostDamage("dice");
-                    break;
-                case 3:
-                    npc.AC++;
+                    npc.AC+=AC/2;
                     break;
             }
         }

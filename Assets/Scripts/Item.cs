@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Item : MonoBehaviour
+public class Item : ICloneable
 {
     static private float rangeBalansingParametr = 1; //Multiplies max ranges of weapons & characters. Basicly 2 for FalloutPNP. 
 
@@ -27,20 +28,17 @@ public class Item : MonoBehaviour
         
     }
     public int apCost = 5;
-    public string DamageDiapason
-    {
-        get
-        {
-            return (damageRandomMultipler + damageAddition) + "-" + (damageRandomMultipler * damageRandomTo + damageAddition);
-        }
-    }
+
 
 
     public string skillname = "";
     
     // Start is called before the first frame update
-    void Awake()
+    public static void LoadItems()
     {
+        if (items.Count != 0)
+            return;
+        
         Item thisItem=new Item();
         thisItem.itemName = "Fist";
         thisItem.SetDamage(1,4,0);
@@ -66,15 +64,6 @@ public class Item : MonoBehaviour
         thisItem.rangedAttack = false;
         thisItem.skillname = "melee";
         items.Add(thisItem);
-
-        //print(items.Count);
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public int Damage
@@ -84,7 +73,7 @@ public class Item : MonoBehaviour
             int summ=0;
             for (int i=0; i<damageRandomMultipler; i++)
             {
-                summ += Random.Range(1, (damageRandomTo + 1));
+                summ += UnityEngine.Random.Range(1, (damageRandomTo + 1));
             }
             summ += damageAddition;
             return summ;
@@ -98,7 +87,7 @@ public class Item : MonoBehaviour
         damageAddition = addition;
     }
 
-    public void BoostDamage (string parametr="addition", int value=1)
+    public void BoostDamage (string parametr, int value=1)
     {
         if (parametr=="addition")
         {
@@ -111,5 +100,37 @@ public class Item : MonoBehaviour
             damageRandomMultipler += value;
         }
     }
+    public void BoostDamage()
+    {
+        if (damageRandomTo % 2 == 0 && UnityEngine.Random.Range(1, damageRandomTo / 3) > 10)
+        {
+            damageRandomMultipler++;
+            damageRandomTo /= 2;
+        }
+        else if (UnityEngine.Random.value <= 0.5f)
+        {
+            damageRandomTo += 3;
+        }
+        else
+        {
+            damageAddition += damageRandomMultipler;
+        }
+    }
 
+    public string FormDamageDiapason(int flatBonus=0)
+    {
+        return (damageRandomMultipler + damageAddition + flatBonus) + "-" + (damageRandomMultipler * damageRandomTo + damageAddition + flatBonus);
+    }
+
+    public static Item GetItem (string name)
+    {
+        foreach (Item item in items)
+        {
+            if (item.itemName == name)
+                return item;
+        }
+        return null;
+    }
+
+    public object Clone() => MemberwiseClone();
 }

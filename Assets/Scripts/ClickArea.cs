@@ -36,6 +36,9 @@ public class ClickArea : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (Status.Current != "planning")
+            return;
+        
         //Start move action
         if (action == "move")
         {

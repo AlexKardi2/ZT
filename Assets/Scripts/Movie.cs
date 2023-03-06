@@ -102,7 +102,6 @@ public class Movie : MonoBehaviour
         {
             thisAction.subject.OverheadText.ShowGreen("+" + thisAction.apCost + " temporal AC");
             Status.NextMovieAct();
-
         }
         
     }
