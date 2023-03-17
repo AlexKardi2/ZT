@@ -93,6 +93,12 @@ public class CombatCharacter : MonoBehaviour
 
     private void Start()
     {
+        if (!isCreated)
+        {
+            print("ERROR!!! Start() for CombatCharacter started too early");
+            return;
+        }
+        
         //Getting components to technical use variables
         OverheadText = GetComponentInChildren<OverheadMessage>();
 
@@ -108,8 +114,8 @@ public class CombatCharacter : MonoBehaviour
 
         //This is not temporary part
         ResetPlanning();
-        CombatCharacter.cCList[i].transform.position = new Vector3(CoordArray.cArray[CombatCharacter.cCList[i].pos[0], CombatCharacter.cCList[i].pos[1], 0], CoordArray.cArray[CombatCharacter.cCList[i].pos[0], CombatCharacter.cCList[i].pos[1], 1], 0);
-        CombatCharacter.cCList[i].CreateClickZones();
+        transform.position = new Vector3(CoordArray.cArray[pos[0], pos[1], 0], CoordArray.cArray[pos[0], pos[1], 1], 0);
+        CreateClickZones();
         //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
 
         /*/TEMP part continuing
@@ -141,12 +147,7 @@ public class CombatCharacter : MonoBehaviour
 
         equipment.Add((Item)mainWeapon.Clone());
         equipment.Add((Item)offWeapon.Clone());
-        /*
-        CombatCharacter.cCList[i].equipment.Add(null);
-        CombatCharacter.cCList[i].equipment.Add(null);
-        CombatCharacter.cCList[i].equipment[0] = Item.items[1];
-        CombatCharacter.cCList[i].equipment[1] = Item.items[2];
-        */
+
         if (equipment[0].itemName!=mainWeapon.itemName || equipment[1].itemName != offWeapon.itemName)
         {
             print("ERROR! Weapon check faild on fullfilling created character.");

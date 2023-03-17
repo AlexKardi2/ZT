@@ -8,8 +8,6 @@ public class Status : MonoBehaviour
     public static List<CombatAction> planningList = new List<CombatAction>();
     public static List<CombatAction> combatLog = new List<CombatAction>();
 
-    public List<CombatAction> showCombatLog = combatLog;
-
     public static string Current { get; private set; } = "starting";
 
     //Variables for "movie" status
@@ -60,6 +58,15 @@ public class Status : MonoBehaviour
         }
     }
 
+    public static void FirstTurn()
+    {
+        planningList.Clear();
+        combatLog.Clear();
+        Turn = 0;
+        Player = 0;
+        MovieAct = 0;
+        Current = "planning";
+    }
     private static void NextTurn()
     {
         print("TURN IS FINISHED. Starting turn "+(Turn+1));
@@ -71,7 +78,8 @@ public class Status : MonoBehaviour
         int deadSouls = CleanDeadBodies();
         if (totalPlayersLevel == 0)
         {
-            Current = "gameover";
+
+            Current = "starting";
             gameManager.GameOver();
             return;
         }

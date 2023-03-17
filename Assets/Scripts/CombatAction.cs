@@ -82,8 +82,56 @@ public class CombatAction
         else
             return false;
     }
-
     public static void CreatePlanningList(List<CombatAction> pList)
+    {
+        pList.Clear();
+        List<ActionToCompare> listToSort = new();
+
+        int spentAP=0;
+        int subjectTotalAp;
+        foreach (CombatCharacter cC in CombatCharacter.cCList)
+        {
+            spentAP=0;
+            foreach (CombatAction plannedAction in cC.personalPlanningList)
+            {
+                spentAP += plannedAction.apCost;
+                subjectTotalAp = plannedAction.subject.totalAP;
+                listToSort.Add(new(plannedAction, (float)spentAP / subjectTotalAp, subjectTotalAp));
+            }
+        }
+
+        listToSort.Sort();
+
+        for (int i = 0; i < listToSort.Count; i++)
+            pList.Add(listToSort[i].Action);
+
+        foreach (CombatCharacter cChar in CombatCharacter.cCList)
+            cChar.personalPlanningList.Clear();
+    }
+    private class ActionToCompare : System.IComparable<ActionToCompare>
+    {
+        public CombatAction Action { get; private set; }
+        private float placeInTurn;
+        private int totalAP;
+        public ActionToCompare(CombatAction action, float placeInTurn, int totalAP)
+        {
+            Action = action;
+            this.placeInTurn = placeInTurn;
+            this.totalAP = totalAP;
+        }
+        public int CompareTo(ActionToCompare compAction)
+        {
+            if (compAction == null)
+                return 1;
+            if (placeInTurn > compAction.placeInTurn)
+                return 1;
+            if (placeInTurn < compAction.placeInTurn)
+                return -1;
+            return totalAP - compAction.totalAP;
+        }
+    }
+
+    public static void Create2PlanningList(List<CombatAction> pList)
     {
         pList.Clear();
 
@@ -231,4 +279,6 @@ public class CombatAction
             }
         }
     }
+
+ 
 }

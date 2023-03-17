@@ -5,7 +5,6 @@ using UnityEngine;
 public class Movie : MonoBehaviour
 {
     //Loading prepetaions
-    public Preparations prep;
     List<CombatAction> combatLog = Status.combatLog;
     public GameObject bulletPrefab;
     private GameObject bullet;

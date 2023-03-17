@@ -11,6 +11,8 @@ public class UserInterface : MonoBehaviour
     [SerializeField] private TextMeshProUGUI weaponInfoField;
     [SerializeField] private TextMeshProUGUI scoreInfoField;
     [SerializeField] private TextMeshProUGUI playerInfoField;
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private GameObject mainMenu;
 
     void Awake()
     {
@@ -24,6 +26,13 @@ public class UserInterface : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void ShowMainMenu()
+    {
+        mainMenu.SetActive(true);
+        if (Status.Current == "starting")
+            gameObject.GetComponentInChildren<CharacterCreator>(true).ResetMainMenu();
     }
 
     public void UpdateAP(CombatCharacter character) => actionPointsText.text = character.PlanningAP+" AP";
@@ -119,5 +128,22 @@ public class UserInterface : MonoBehaviour
     public void ShowBigMessage (string message)
     {
         print(message);
+    }
+
+    public void StartButtonAction ()
+    {
+        if (Status.Current != "starting")
+            return;
+
+        if (CombatCharacter.cCList.Count < 1 || CombatCharacter.cCList.Count > 2)
+            return;
+
+        foreach (CombatCharacter pc in CombatCharacter.cCList)
+            if (pc.ai != "")
+                return;
+
+        mainMenu.SetActive(false);
+        gameManager.StartGame();
+
     }
 }

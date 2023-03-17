@@ -1341,6 +1341,7 @@ MonoBehaviour:
   offHandText: {fileID: 644719130}
   errorText: {fileID: 690378525}
   createAddCharacterButton: {fileID: 400964552}
+  startGameButton: {fileID: 1444161442}
 --- !u!1 &396306648
 GameObject:
   m_ObjectHideFlags: 0
@@ -1851,7 +1852,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 476735862}
-  - component: {fileID: 476735860}
   - component: {fileID: 476735863}
   - component: {fileID: 476735865}
   - component: {fileID: 476735867}
@@ -1863,18 +1863,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &476735860
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 476735859}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3dd3d49c8ba18ad4ba130c4cb0b42446, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &476735862
 Transform:
   m_ObjectHideFlags: 0
@@ -2282,7 +2270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c62e2e69a000e454297e1012dd067f62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prep: {fileID: 476735860}
+  prep: {fileID: 0}
   bulletPrefab: {fileID: 3350732840273537028, guid: 44ac7ea24cb54304b8307951bd677f06, type: 3}
 --- !u!1 &621869503
 GameObject:
@@ -6430,14 +6418,26 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1444161443}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1444161442}
+        m_TargetAssemblyTypeName: UnityEngine.UI.Selectable, UnityEngine.UI
+        m_MethodName: set_interactable
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 2118375719}
         m_TargetAssemblyTypeName: UserInterface, Assembly-CSharp
-        m_MethodName: ChangeWeapon
+        m_MethodName: StartButtonAction
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10375,6 +10375,8 @@ MonoBehaviour:
   weaponInfoField: {fileID: 1780781563}
   scoreInfoField: {fileID: 773123564}
   playerInfoField: {fileID: 700314350}
+  gameManager: {fileID: 476735868}
+  mainMenu: {fileID: 1748052536}
 --- !u!114 &2118375720
 MonoBehaviour:
   m_ObjectHideFlags: 0

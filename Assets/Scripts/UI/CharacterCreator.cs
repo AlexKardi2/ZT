@@ -22,8 +22,15 @@ public class CharacterCreator : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI errorText;
     [SerializeField] private Button createAddCharacterButton;
+    [SerializeField] private Button startGameButton;
 
     List<string> weaponOptions = new();
+
+    private string[] nameList = { "Jessie", "Lenee", "Sights", "Shay", "Shaw", "Stylez", 
+        "Jennings", "Sindee", "Lomeli", "Stella", "Sophie", "Summer", "Stevie", "Lee", "Sins", 
+        "Xander", "Danny", "Bruce", "Deen", "Nixon", "Diesel", "Ryan", "Kristof", "Derrick", 
+        "Logan", "Brick", "Rocco", "Toni", "Jeremy", "Wylde", "Quinton", "Parker", "Brass", 
+        "Karlo", "Anthony", "Tyler" };
 
     // Start is called before the first frame update
     void Start()
@@ -35,6 +42,17 @@ public class CharacterCreator : MonoBehaviour
         mainHandWeapon.AddOptions(weaponOptions);
         offHandWeapon.AddOptions(weaponOptions);
         RefreshWeaponTexts();
+    }
+
+    private void OnEnable()
+    {
+        nameField.text = nameList[Random.Range(0, nameList.Length)];
+    }
+
+    public void ResetMainMenu() {
+        createAddCharacterButton.GetComponentInChildren<TextMeshProUGUI>().text = "Create Character";
+        createAddCharacterButton.interactable = true;
+        startGameButton.interactable = false;
     }
 
     // Update is called once per frame
@@ -68,12 +86,10 @@ public class CharacterCreator : MonoBehaviour
         } else if (CombatCharacter.cCList.Count == 2)
         {
             createAddCharacterButton.GetComponentInChildren<TextMeshProUGUI>().text = "Create Character";
-        } else
-        {
-            createAddCharacterButton.interactable = true;
-        }
+        } 
         
         gameObject.SetActive(false);
+        startGameButton.interactable = true;
     }
 
     public void RefreshWeaponTexts()
