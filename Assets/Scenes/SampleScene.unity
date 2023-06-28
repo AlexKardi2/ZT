@@ -1276,7 +1276,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 3.6047974, y: -33.122986}
+  m_AnchoredPosition: {x: 3.6049805, y: -33.122925}
   m_SizeDelta: {x: -1059.792, y: -390.52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &261544767
@@ -2270,7 +2270,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c62e2e69a000e454297e1012dd067f62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prep: {fileID: 0}
   bulletPrefab: {fileID: 3350732840273537028, guid: 44ac7ea24cb54304b8307951bd677f06, type: 3}
 --- !u!1 &621869503
 GameObject:
@@ -3681,7 +3680,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -48.8, y: -50.1}
+  m_AnchoredPosition: {x: -48.80005, y: -50.099976}
   m_SizeDelta: {x: 64, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &822586457
@@ -10406,10 +10405,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
