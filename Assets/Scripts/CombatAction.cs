@@ -15,7 +15,7 @@ public class CombatAction
 
     //For movie only
     public int DamageDone { get; private set; } = 0;
-    public int HPAfter { get; private set; }
+    public int targetHPAfter { get; private set; }
     
     public bool Move(CombatCharacter subj, int x, int y)
     {
@@ -233,9 +233,9 @@ public class CombatAction
                 if (!checkList)
                     continue;
 
-                int oDcost = Mathf.Max(cA.apCost, weapon.apCost);
+                int apCost = Mathf.Max(cA.apCost, weapon.apCost);
 
-                if (checkList && cA.subject.SpendAP(oDcost))
+                if (checkList && cA.subject.SpendAP(apCost))
                 {
                     log.Add(cA);
 
@@ -244,13 +244,13 @@ public class CombatAction
                     if (Random.Range(0, 100) < hitChanse)
                     {
                         int damage = weapon.Damage;
-                        if (!weapon.rangedAttack)
+                        if (!weapon.rangedAttack && cA.subject.ai=="")
                             damage += cA.subject.MeleeDamageBonus;
                         bool deadBeforeDamage = cA.target.Dead;
                         cA.target.GetDamage(damage);
                         //print(cA.target.name + "'s got " + damage + " damage. Hit chance was " + hitChanse);
                         cA.DamageDone = damage;
-                        cA.HPAfter = cA.target.HP;
+                        cA.targetHPAfter = cA.target.HP;
 						if ((cA.target.Dead != deadBeforeDamage) && cA.target.ai!="")
 						{
 							NonPlayerCharacter npcTarget = (NonPlayerCharacter)cA.target;

@@ -19,6 +19,8 @@ public class CombatCharacter : MonoBehaviour
     private bool isCreated = false;
     public GameObject prefabClickZone;
     public GameObject attackZone;
+    public Animator characterAnimator;
+    public AudioSource characterSound;
     public OverheadMessage OverheadText { get; protected set; }
     public string ExperienceText
     {
@@ -27,7 +29,7 @@ public class CombatCharacter : MonoBehaviour
             return $"( {experience} / {level * levelUpMultipler}  experience)";
         }
     }
-    public int Experience { get => experience + level * levelUpMultipler;  }
+    public int Experience { get => experience + (level-1) * levelUpMultipler;  }
     private List<GameObject> clickZones = new List<GameObject>();
 
 
@@ -75,7 +77,7 @@ public class CombatCharacter : MonoBehaviour
 
     //Planning stuff
     public int PlanningAP {get; protected set;}
-    public int MeleeDamageBonus { get => ST > 5 ? ST - 5 : 1; }
+    public int MeleeDamageBonus { get => ST * 2; }
 
     public int[] planningPos = new int[2];
     public List<CombatAction> personalPlanningList = new List<CombatAction>();
@@ -101,6 +103,8 @@ public class CombatCharacter : MonoBehaviour
         
         //Getting components to technical use variables
         OverheadText = GetComponentInChildren<OverheadMessage>();
+        characterAnimator= GetComponentInChildren<Animator>(true);
+        characterSound = GetComponent<AudioSource>();
 
         CalculateSecStats();
         ResetAP();
@@ -117,22 +121,9 @@ public class CombatCharacter : MonoBehaviour
         transform.position = new Vector3(CoordArray.cArray[pos[0], pos[1], 0], CoordArray.cArray[pos[0], pos[1], 1], 0);
         CreateClickZones();
         //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
-
-        /*/TEMP part continuing
-        bool readyCheck=true;
-        //print("Ready Check started for "+cCList.Count);
-        foreach (CombatCharacter checkingCharacter in cCList) {
-            if (checkingCharacter.attackZone == null) readyCheck = false;
         }
 
-        if (readyCheck && Status.Turn == 0)
-        {
-            print("Ready Check sucsessful for " + cCList.Count + ". StartingPlanning for Player N" + Status.Player);
-            CombatCharacter.cCList[Status.Player].StartPlanning();
-        }*/
-    }
-
-    public bool FulfillCharacter(int st, int pe, int en, int ag, Item mainWeapon, Item offWeapon)
+    public bool FulfillCharacter(string name, int st, int pe, int en, int ag, Item mainWeapon, Item offWeapon)
     {
         if (isCreated)
             return false;
@@ -140,6 +131,7 @@ public class CombatCharacter : MonoBehaviour
         if (mainWeapon == null || offWeapon == null)
             return false;
 
+        charName = name;
         ST = st;
         PE = pe;
         EN = en;
@@ -219,7 +211,7 @@ public class CombatCharacter : MonoBehaviour
 
             //Setting places for click zones
             //clickZones[i].transform.position = new Vector3 (CoordArray.cArray[(this.pos[0] + xCorrArray[i]), (this.pos[1] + yCorrArray[i]), 0], CoordArray.cArray[(this.pos[0] + xCorrArray[i]), (this.pos[1] + yCorrArray[i]), 1], 0);
-            clickZones[i].transform.position = new Vector3((this.transform.position.x + clickzoneCoordCorrections[i][0]), (this.transform.position.y + clickzoneCoordCorrections[i][1]), 0);
+            clickZones[i].transform.position = new Vector3((this.transform.position.x + clickzoneCoordCorrections[i][0]), (this.transform.position.y + clickzoneCoordCorrections[i][1]), clickZones[i].transform.position.y);
 
             clickZones[i].SetActive(false); //Turning them off
         }
@@ -230,7 +222,7 @@ public class CombatCharacter : MonoBehaviour
         else
             print("Error!!! AZone for " + name + "isn't created");*/
         attackZone.transform.parent = this.transform;
-        attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
+        attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], attackZone.transform.position.z);
         attackZone.GetComponent<ClickArea>().combatCharacter = this;
         attackZone.GetComponent<ClickArea>().action = "attack";
         attackZone.SetActive(false);
@@ -255,6 +247,7 @@ public class CombatCharacter : MonoBehaviour
         UserInterface.Instance.UpdateAP(this);
         UserInterface.Instance.ShowWeaponStats();
         UserInterface.Instance.RefreshCharInfo();
+        
         for (int i = 0; i < clickZones.Count; i++)
         {
 

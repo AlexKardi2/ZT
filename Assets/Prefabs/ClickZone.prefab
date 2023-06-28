@@ -27,9 +27,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2464289397350379709}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.754, y: 0, z: 0}
-  m_LocalScale: {x: 0.73484, y: 0.73484, z: 0.73484}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0.754, y: 0, z: 0.1}
+  m_LocalScale: {x: 0.655, y: 0.655, z: 0.655}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0, g: 0.64199066, b: 1, a: 0.20392157}
+  m_Color: {r: 0.0001912117, g: 0.16470589, b: 1, a: 0.23529412}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -102,7 +102,7 @@ MonoBehaviour:
   xCorrection: 0
   yCorrection: 0
   combatCharacter: {fileID: 0}
-  costOD: 0
+  costAP: 0
 --- !u!58 &2464289397350379705
 CircleCollider2D:
   m_ObjectHideFlags: 0

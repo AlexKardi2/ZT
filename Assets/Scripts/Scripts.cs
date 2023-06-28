@@ -162,6 +162,7 @@ public class Scripts : MonoBehaviour
 
     public static int HitChanse (CombatCharacter subject, CombatCharacter target, Item weapon)
     {
+        int overPerceptionHitChenseDecrease = 10;
         /*if (subject.loc == null || target.loc == null) //TODO turn it back after repair Location class
             return 0;*/
 
@@ -184,7 +185,7 @@ public class Scripts : MonoBehaviour
         hitChanse -= target.AC;
         hitChanse -= target.bonusAC;
 		if (distance>perseptionLenght)
-			hitChanse-=(distance-perseptionLenght)*5;
+			hitChanse-=(distance-perseptionLenght)*overPerceptionHitChenseDecrease;
 		if (hitChanse<0) 
 			hitChanse=0;
 

@@ -6,13 +6,18 @@ using UnityEngine.UI;
 
 public class UserInterface : MonoBehaviour
 {
+    private float bigMessageVisionTime = 8f;
+
     public static UserInterface Instance { get; private set; }
     [SerializeField] private TextMeshProUGUI actionPointsText;
     [SerializeField] private TextMeshProUGUI weaponInfoField;
     [SerializeField] private TextMeshProUGUI scoreInfoField;
+    [SerializeField] private TextMeshProUGUI bestScoreField;
     [SerializeField] private TextMeshProUGUI playerInfoField;
+    [SerializeField] private TextMeshProUGUI bigMessage;
     [SerializeField] private GameManager gameManager;
     [SerializeField] private GameObject mainMenu;
+    [SerializeField] private List<Button> planningButtons;
 
     void Awake()
     {
@@ -92,7 +97,13 @@ public class UserInterface : MonoBehaviour
         scoreInfoText += "\nScore: " + score;
         scoreInfoField.text = scoreInfoText;
     }
-
+    public void ShowBestScore(LinkedList<(string,int)> winners)
+    {
+        string bestScoreText = "Best Score: \n";
+        foreach ((string,int) currentNode in winners)
+            bestScoreText += currentNode.Item2 + " - " + currentNode.Item1+"\n";
+        bestScoreField.text = bestScoreText;
+    }
     public void RefreshCharInfo() => RefreshCharInfo(CombatCharacter.cCList[Status.Player]);
     public void RefreshCharInfo(CombatCharacter player)
     {
@@ -125,11 +136,49 @@ public class UserInterface : MonoBehaviour
         }
     }
 
+    public void SetPlaningButtons(bool interactible)
+    {
+        foreach (Button button in planningButtons)
+            button.interactable=interactible;
+    }
     public void ShowBigMessage (string message)
     {
-        print(message);
-    }
+        if (bigMessage.gameObject.activeSelf)
+        {
+            print("ERROR!!! Big message "+message+" was not shown");
+            return;
+        }
+        bigMessage.gameObject.SetActive(true);
+        Color color = bigMessage.color;
+        color.a = 0f;
+        bigMessage.color = color;
+        bigMessage.text = message;
+        StartCoroutine(ShowAndHide());
 
+        IEnumerator ShowAndHide()
+        {
+            bool show = true;
+            float alpha = 0f;
+            while (show && (alpha < 1f)) 
+            {
+                alpha += 3 / bigMessageVisionTime * Time.deltaTime ;
+                color.a = alpha;
+                bigMessage.color = color;
+                yield return null;
+            }
+            show = false;
+            yield return new WaitForSeconds(bigMessageVisionTime / 3);
+
+            while (!show && (alpha>0))
+            {
+                alpha -= 3 / bigMessageVisionTime * Time.deltaTime;
+                color.a = alpha;
+                bigMessage.color = color;
+                yield return null;
+            }
+            bigMessage.gameObject.SetActive(false);
+        }
+    }
     public void StartButtonAction ()
     {
         if (Status.Current != "starting")

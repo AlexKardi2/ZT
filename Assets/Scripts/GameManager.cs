@@ -5,6 +5,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
 
+    private LinkedList<(string, int)> winners = new();
+
     void Awake()
     {
         Item.LoadItems();
@@ -18,11 +20,38 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        string winnerName="";
+        int winnerScore=0;
         foreach (CombatCharacter cChar in CombatCharacter.cCList) {
+            if (cChar.ai=="")
+            {
+                if (winnerName == "")
+                    winnerName += cChar.charName;
+                else
+                    winnerName += " & " + cChar.charName;
+                winnerScore += cChar.Experience;
+            }
             Destroy(cChar.gameObject);
         }
-        UserInterface.Instance.ShowBigMessage("GameOver");
+
+        if (winners.Count == 0)
+            winners.AddFirst((winnerName, winnerScore));
+        else
+        {
+            LinkedListNode<(string, int)> currentNode = winners.First;
+            while (currentNode!=null && winnerScore < currentNode.Value.Item2)
+                currentNode = currentNode.Next;
+            if (currentNode == null)
+                winners.AddLast((winnerName, winnerScore));
+            else
+                winners.AddBefore(currentNode, (winnerName, winnerScore));
+        }
+
+        UserInterface.Instance.ShowBestScore(winners);
+        UserInterface.Instance.ShowBigMessage("Game Over");
         UserInterface.Instance.ShowMainMenu();
+
+        
     }
     public void StartGame()
     {

@@ -22,38 +22,30 @@ public class Item : ICloneable
         {
             return (int)(_range * (1 / rangeBalansingParametr));
         }
-        set {
+        set
+        {
             _range = value;
         }
-        
     }
     public int apCost = 5;
 
 
 
     public string skillname = "";
-    
+
     // Start is called before the first frame update
     public static void LoadItems()
     {
         if (items.Count != 0)
             return;
-        
-        Item thisItem=new Item();
+
+        Item thisItem = new Item();
         thisItem.itemName = "Fist";
-        thisItem.SetDamage(1,4,0);
+        thisItem.SetDamage(1, 4, 0);
         thisItem.Range = 1;
         thisItem.apCost = 3;
         thisItem.rangedAttack = false;
         thisItem.skillname = "unarmed";
-        items.Add(thisItem);
-
-        thisItem = new Item();
-        thisItem.itemName = "Rifle";
-        thisItem.SetDamage(1, 8, 8);
-        thisItem.Range = 19;
-        thisItem.apCost = 5;
-        thisItem.skillname = "guns";
         items.Add(thisItem);
 
         thisItem = new Item();
@@ -64,14 +56,65 @@ public class Item : ICloneable
         thisItem.rangedAttack = false;
         thisItem.skillname = "melee";
         items.Add(thisItem);
+
+        thisItem = new Item();
+        thisItem.itemName = "Sword";
+        thisItem.SetDamage(3, 8, 0);
+        thisItem.Range = 1;
+        thisItem.apCost = 3;
+        thisItem.rangedAttack = false;
+        thisItem.skillname = "melee";
+        items.Add(thisItem);
+
+        thisItem = new Item();
+        thisItem.itemName = "Pistol";
+        thisItem.SetDamage(1, 8, 3);
+        thisItem.Range = 4;
+        thisItem.apCost = 4;
+        thisItem.skillname = "guns";
+        items.Add(thisItem);
+
+        thisItem = new Item();
+        thisItem.itemName = "Rifle";
+        thisItem.SetDamage(1, 10, 4);
+        thisItem.Range = 7;
+        thisItem.apCost = 5;
+        thisItem.skillname = "guns";
+        items.Add(thisItem);
+
+        thisItem = new Item();
+        thisItem.itemName = "Shootgun";
+        thisItem.SetDamage(5, 6, 0);
+        thisItem.Range = 3;
+        thisItem.apCost = 5;
+        thisItem.skillname = "guns";
+        items.Add(thisItem);
+
+        thisItem = new Item();
+        thisItem.itemName = "Sniper rifle";
+        thisItem.SetDamage(2, 20, 0);
+        thisItem.Range = 10;
+        thisItem.apCost = 8;
+        thisItem.skillname = "guns";
+        items.Add(thisItem);
+
+        thisItem = new Item();
+        thisItem.itemName = "Machinegun";
+        thisItem.SetDamage(5, 6, 0);
+        thisItem.Range = 5;
+        thisItem.apCost = 6;
+        thisItem.skillname = "guns";
+        items.Add(thisItem);
+
+
     }
 
     public int Damage
     {
         get
         {
-            int summ=0;
-            for (int i=0; i<damageRandomMultipler; i++)
+            int summ = 0;
+            for (int i = 0; i < damageRandomMultipler; i++)
             {
                 summ += UnityEngine.Random.Range(1, (damageRandomTo + 1));
             }
@@ -80,26 +123,29 @@ public class Item : ICloneable
         }
     }
 
-    public void SetDamage(int randomMultipler=1, int randomTo=6, int addition=0)
+    public void SetDamage(int randomMultipler = 1, int randomTo = 6, int addition = 0)
     {
         damageRandomMultipler = randomMultipler;
         damageRandomTo = randomTo;
         damageAddition = addition;
     }
 
-    public void BoostDamage (string parametr, int value=1)
+    public void BoostDamage(string parametr, int value = 1)
     {
-        if (parametr=="addition")
+        if (parametr == "addition")
         {
             damageAddition += value;
-        } else if (parametr=="dice")
+        }
+        else if (parametr == "dice")
         {
             damageRandomTo += value;
-        } else if (parametr=="multipler")
+        }
+        else if (parametr == "multipler")
         {
             damageRandomMultipler += value;
         }
     }
+
     public void BoostDamage()
     {
         if (damageRandomTo % 2 == 0 && UnityEngine.Random.Range(1, damageRandomTo / 3) > 10)
@@ -117,12 +163,12 @@ public class Item : ICloneable
         }
     }
 
-    public string FormDamageDiapason(int flatBonus=0)
+    public string FormDamageDiapason(int flatBonus = 0)
     {
         return (damageRandomMultipler + damageAddition + flatBonus) + "-" + (damageRandomMultipler * damageRandomTo + damageAddition + flatBonus);
     }
 
-    public static Item GetItem (string name)
+    public static Item GetItem(string name)
     {
         foreach (Item item in items)
         {

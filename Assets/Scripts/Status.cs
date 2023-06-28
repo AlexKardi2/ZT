@@ -48,6 +48,8 @@ public class Status : MonoBehaviour
         } else
         {
             Player--;
+
+            UserInterface.Instance.SetPlaningButtons(false);
             Current = "performing";
 
             CombatAction.CreatePlanningList(planningList);
@@ -55,6 +57,7 @@ public class Status : MonoBehaviour
             CombatAction.Perform(planningList);
 
             Current = "movie";
+
         }
     }
 
@@ -66,6 +69,7 @@ public class Status : MonoBehaviour
         Player = 0;
         MovieAct = 0;
         Current = "planning";
+        UserInterface.Instance.SetPlaningButtons(true);
     }
     private static void NextTurn()
     {
@@ -78,7 +82,6 @@ public class Status : MonoBehaviour
         int deadSouls = CleanDeadBodies();
         if (totalPlayersLevel == 0)
         {
-
             Current = "starting";
             gameManager.GameOver();
             return;
@@ -96,6 +99,8 @@ public class Status : MonoBehaviour
 
         Player = 0;
         Current = "planning";
+        UserInterface.Instance.SetPlaningButtons(true);
+
         CombatCharacter.cCList[Player].StartPlanning();
 
         void SpawnEnemies(int minSpawnNumber)

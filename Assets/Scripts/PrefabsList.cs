@@ -10,6 +10,10 @@ public class PrefabsList : MonoBehaviour
     //Prefabs for different NPC
     public GameObject ratPrefab;
 
+    //Links to sounds
+    public Dictionary<string, AudioClip> weaponSounds;
+    public Dictionary<string, AudioClip> characterMoveSounds;
+
     //TEMP prefabs
     public GameObject coordinatesText;
 

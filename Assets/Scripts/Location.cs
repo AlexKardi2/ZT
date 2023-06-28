@@ -7,8 +7,8 @@ using TMPro;
 public class Location : MonoBehaviour
 {
     //General MAP SIZE
-    public static int xSize = 10; 
-    public static int ySize = 15;
+    public static int xSize = 15; 
+    public static int ySize = 13;
 
     //Static Array to get Map information
     public static Location[,] map=new Location[xSize, ySize];

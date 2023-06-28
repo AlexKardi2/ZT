@@ -76,7 +76,7 @@ public class CharacterCreator : MonoBehaviour
             return;
 
         GameObject createdCharacter = Instantiate(characterPrefub);
-        if (!createdCharacter.GetComponent<CombatCharacter>().FulfillCharacter(int.Parse(ST.text), int.Parse(PE.text), int.Parse(EN.text), int.Parse(AG.text), mainWeapon, offWeapon))
+        if (!createdCharacter.GetComponent<CombatCharacter>().FulfillCharacter(nameField.text, int.Parse(ST.text), int.Parse(PE.text), int.Parse(EN.text), int.Parse(AG.text), mainWeapon, offWeapon))
             return;
 
         if (CombatCharacter.cCList.Count == 1)

@@ -22,6 +22,8 @@ public class NonPlayerCharacter : CombatCharacter
         
         //Getting components to technical use variables
         OverheadText = GetComponentInChildren<OverheadMessage>();
+        characterAnimator = GetComponentInChildren<Animator>(true);
+        characterSound = GetComponent<AudioSource>();
 
         ResetAP();
         HP = MaxHP;
@@ -30,14 +32,14 @@ public class NonPlayerCharacter : CombatCharacter
 
         //This is not temporary part
         ResetPlanning();
-        transform.position = new Vector3(CoordArray.cArray[pos[0], pos[1], 0], CoordArray.cArray[pos[0], pos[1], 1], 0);
+        transform.position = new Vector3(CoordArray.cArray[pos[0], pos[1], 0], CoordArray.cArray[pos[0], pos[1], 1], transform.position.z);
 
         //temp creating attackzone
         attackZone = Instantiate<GameObject>(prefabClickZone);
         if (attackZone == null)
             print("Error!!! AZone for " + name + "isn't created");
         attackZone.transform.parent = this.transform;
-        attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], 0);
+        attackZone.transform.position = new Vector3(CoordArray.cArray[this.pos[0], this.pos[1], 0], CoordArray.cArray[this.pos[0], this.pos[1], 1], attackZone.transform.position.z);
         attackZone.GetComponent<ClickArea>().combatCharacter = this;
         attackZone.GetComponent<ClickArea>().action = "attack";
         attackZone.SetActive(false);
