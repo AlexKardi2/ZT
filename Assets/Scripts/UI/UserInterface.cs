@@ -19,18 +19,12 @@ public class UserInterface : MonoBehaviour
     [SerializeField] private GameObject mainMenu;
     [SerializeField] private List<Button> planningButtons;
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null)
             Instance = this;
         else if (Instance != this)
             Destroy(this);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void ShowMainMenu()
@@ -113,6 +107,29 @@ public class UserInterface : MonoBehaviour
                             + $"PE {player.PE} [{player.PE-1} aim shoot range]\n" //TODO Change range formula to Property??
                             + $"EN {player.EN} [{player.MaxHP} Max HP]\n"
                             + $"AG {player.AG} [{player.totalAP} AP, {player.AC} AC]";
+        playerInfoField.text = charInfoText;
+    }
+
+    public void ShowEnemyInfo(NonPlayerCharacter npc)
+    {
+        string charInfoText = $"{npc.charName} [ {npc.level} lvl ]\n"
+                    + $"HP {npc.HP}/{npc.MaxHP}   AC {npc.AC}   AP {npc.totalAP}"
+                    + $"\n\nWeapon - {npc.equipment[0].itemName}\nDamage: " + npc.equipment[0].FormDamageDiapason();
+        if (npc.equipment[0].rangedAttack)
+            charInfoText += " Range: " + npc.equipment[0].Range + "\n";
+        else
+            charInfoText += " Melee\n";
+            charInfoText += "Skill: " + npc.skills[npc.equipment[0].skillname] + " %";
+
+        if (npc.equipment[1]!=null && npc.equipment[1]!=npc.equipment[0])
+        {
+            charInfoText += $"\n\nWeapon 2 - {npc.equipment[1].itemName}\n Damage: " + npc.equipment[1].FormDamageDiapason();
+            if (npc.equipment[1].rangedAttack)
+                charInfoText += "Range: " + npc.equipment[1].Range + "\n";
+            else
+                charInfoText += "Melee\n";
+            charInfoText += "Skill: " + npc.skills[npc.equipment[1].skillname] + " %";
+        }
         playerInfoField.text = charInfoText;
     }
 

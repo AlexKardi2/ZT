@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
                     winnerName += cChar.charName;
                 else
                     winnerName += " & " + cChar.charName;
-                winnerScore += cChar.Experience;
+                winnerScore += cChar.Experience*(int)Status.Difficulty;
             }
             Destroy(cChar.gameObject);
         }
@@ -56,7 +56,7 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         Status.FirstTurn();
-        NonPlayerCharacter.SpawnRat(1);
+        NonPlayerCharacter.SpawnMiner(1);
         
         bool readyCheck = true;
         foreach (CombatCharacter checkingCharacter in CombatCharacter.cCList)

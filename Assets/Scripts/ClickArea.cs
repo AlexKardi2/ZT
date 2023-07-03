@@ -10,6 +10,7 @@ public class ClickArea : MonoBehaviour
     public int yCorrection;
     public CombatCharacter combatCharacter; //Subject for MOVE & target (object) for ATTACK
     public int costAP; //for MOVE only
+    public KeyCode hotKey = KeyCode.None;
 
     private int xPlace;
     private int yPlace;
@@ -25,12 +26,14 @@ public class ClickArea : MonoBehaviour
         if (action=="attack")
         {
             combatCharacter.OverheadText.Show("To hit: "+ Scripts.HitChanse(CombatCharacter.cCList[Status.Player], combatCharacter)+"%");
+            UserInterface.Instance.ShowEnemyInfo((NonPlayerCharacter)combatCharacter);
         }
     }
 
     private void OnMouseExit()
     {
         combatCharacter.OverheadText.ShowHP();
+        UserInterface.Instance.RefreshCharInfo();
     }
 
 
@@ -78,6 +81,7 @@ public class ClickArea : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (Input.GetKeyDown(hotKey))
+            OnMouseDown();
     }
 }

@@ -9,6 +9,13 @@ public class Status : MonoBehaviour
     public static List<CombatAction> combatLog = new List<CombatAction>();
 
     public static string Current { get; private set; } = "starting";
+    private static float _difficulty=1;
+    public static float Difficulty { get=>_difficulty; set 
+        {
+            if (Current == "starting" && value >= 1 && value <= 3)
+                _difficulty = value;
+        } 
+    }
 
     //Variables for "movie" status
     public static int MovieAct { get; private set; } = 0;
@@ -120,7 +127,7 @@ public class Status : MonoBehaviour
             {
                 int npcSpawnLevel = Mathf.Min(Random.Range(1, (totalPlayersLevel - totalEnemiesLevel + 1)), maxSpawnLevel);
                 totalEnemiesLevel += npcSpawnLevel;
-                NonPlayerCharacter.SpawnRat(npcSpawnLevel);
+                NonPlayerCharacter.SpawnMiner(npcSpawnLevel);
             }
 
             if (totalEnemiesLevel < totalPlayersLevel)
@@ -130,7 +137,7 @@ public class Status : MonoBehaviour
                 if (spawnRandom < additionalSpawnChanse)
                 {
                     int npcSpawnLevel = Mathf.Min(Random.Range(1, (totalPlayersLevel - totalEnemiesLevel + 1)), maxSpawnLevel);
-                    NonPlayerCharacter.SpawnRat(npcSpawnLevel);
+                    NonPlayerCharacter.SpawnMiner(npcSpawnLevel);
                     print($"Was spawned additional NPC. Chanse was {additionalSpawnChanse}, random rolled {spawnRandom}");
                 }
                 else

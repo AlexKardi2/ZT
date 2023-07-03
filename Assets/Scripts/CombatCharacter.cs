@@ -9,7 +9,6 @@ public class CombatCharacter : MonoBehaviour
 
     //Balansing variables
     private readonly int levelUpMultipler = 2;
-    private readonly int levelUpHealDevider = 3;
 
     //Technical use variables
     //setting X & Y corrections for 1st circle + List of child GameObjects
@@ -178,6 +177,8 @@ public class CombatCharacter : MonoBehaviour
 
     public void CreateClickZones()
     {
+        KeyCode[] keyCodes = { KeyCode.W, KeyCode.F, KeyCode.D, KeyCode.S, KeyCode.A, KeyCode.Q };
+        
         //Create correct x+y corrections arrays
         int[] xCorrArray = new int[yCorrArray.Length];
         if ((pos[1] % 2) == 0)
@@ -204,13 +205,13 @@ public class CombatCharacter : MonoBehaviour
             clickZones.Add(Instantiate<GameObject>(prefabClickZone));
             clickZones[i].transform.parent = this.transform;
             clickZones[i].GetComponent<ClickArea>().combatCharacter = this;
+            clickZones[i].GetComponent<ClickArea>().hotKey = keyCodes[i];
 
             //Setting X & Y corrections for zones
             clickZones[i].GetComponent<ClickArea>().xCorrection = xCorrArray[i];
             clickZones[i].GetComponent<ClickArea>().yCorrection = yCorrArray[i];
 
             //Setting places for click zones
-            //clickZones[i].transform.position = new Vector3 (CoordArray.cArray[(this.pos[0] + xCorrArray[i]), (this.pos[1] + yCorrArray[i]), 0], CoordArray.cArray[(this.pos[0] + xCorrArray[i]), (this.pos[1] + yCorrArray[i]), 1], 0);
             clickZones[i].transform.position = new Vector3((this.transform.position.x + clickzoneCoordCorrections[i][0]), (this.transform.position.y + clickzoneCoordCorrections[i][1]), clickZones[i].transform.position.y);
 
             clickZones[i].SetActive(false); //Turning them off
@@ -353,7 +354,7 @@ public class CombatCharacter : MonoBehaviour
                     equipment[3].BoostArmor();
                     break;*/
             }
-            HP += EN / levelUpHealDevider;
+            HP += (int)(EN / Status.Difficulty);
             print(charName + " " + leveuUpText);
             OverheadText.ShowGreen(leveuUpText);
         }
@@ -455,15 +456,11 @@ public class CombatCharacter : MonoBehaviour
                     cz.SetActive(false);
             }
         }
-
-        /*if (planningAP == 0) 
-            Status.NextPlayer();*/
-
     }
 
     public void BoostSkill(string skillname)
     {
-        float difficalty = 0.1f; //<1 - much easier to train; >1 - much more difficult; 0-always trains
+        float difficalty = 0.1f*Status.Difficulty; //<1 - much easier to train; >1 - much more difficult; 0-always trains
         
         if ((skillname == "") || (!skills.ContainsKey(skillname)))
             return;
@@ -483,9 +480,5 @@ public class CombatCharacter : MonoBehaviour
         } else
             print("Skill " + skillname + "'v not improved. Chanse " + chanse + " < roll "+roll);
     }
-    /*public void DeathProtocol()
-    {
-        print("DEATH protocol is NOT working!!!");
-    }*/
 
 }

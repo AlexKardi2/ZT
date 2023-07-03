@@ -50,14 +50,8 @@ public class Location : MonoBehaviour
         }
 
     }
-
-    private void Start()
-    {
-
-
-    }
 	
-	private void DrawCoordinates () {
+    private void DrawCoordinates () {
 		Transform canvas = GetComponentInChildren<Canvas>().transform;
         GameObject newCoordinatesGO;
         for (int x = 0; x < xSize; x++)

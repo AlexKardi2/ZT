@@ -43,21 +43,6 @@ public class NonPlayerCharacter : CombatCharacter
         attackZone.GetComponent<ClickArea>().combatCharacter = this;
         attackZone.GetComponent<ClickArea>().action = "attack";
         attackZone.SetActive(false);
-
-        //ADD when needed if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[0]=Item.items[0]; if (CombatCharacter.cCList[i].equipment[0]==null) CombatCharacter.cCList[i].equipment[1]=Item.items[0];
-
-        /*/TEMP part continuing
-        bool readyCheck = true;
-        foreach (CombatCharacter checkingCharacter in cCList)
-        {
-            if (checkingCharacter.attackZone == null) readyCheck = false;
-        }
-
-        if (readyCheck&& Status.Turn == 0)
-        {
-            print("Ready Check sucsessful for " + cCList.Count+ ". StartingPlanning for Player N"+ Status.Player);
-            CombatCharacter.cCList[Status.Player].StartPlanning();
-        }*/
     }
 
     public override void StartPlanning(bool start = true)
@@ -102,7 +87,7 @@ public class NonPlayerCharacter : CombatCharacter
 
     }
 
-    public static void SpawnRat(int level = 1)
+    public static void SpawnMiner(int level = 1)
     {
         if (level < 1) return;
         
@@ -121,13 +106,14 @@ public class NonPlayerCharacter : CombatCharacter
         GameObject npcGameObj = Instantiate(PrefabsList.instance.ratPrefab);
         NonPlayerCharacter npc = npcGameObj.GetComponent<NonPlayerCharacter>();
         npc.ai = ai;
+        npc.charName = "Miner";
         npc.MaxHP = maxHP;
         npc.totalAP = totalAP;
         npc.AC = AC;
         npc.level = level;
 
         Item attack = new Item();
-        attack.itemName = "Bite";
+        attack.itemName = "Plasma Cutter";
         attack.Range = damageRange;
         attack.apCost = attackAP;
         attack.rangedAttack = rangedAttack;
@@ -141,7 +127,7 @@ public class NonPlayerCharacter : CombatCharacter
             npc.skills.Add(attack.skillname, 0);
         npc.skills[attack.skillname] = 75;
 
-        for (int i=1; i<level; i++)
+        for (int i=1; i<level*Status.Difficulty; i++)
         {
             npc.MaxHP += maxHP/2;
             int randomStart = 0;
