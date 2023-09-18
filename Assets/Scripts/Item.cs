@@ -148,7 +148,7 @@ public class Item : ICloneable
 
     public void BoostDamage()
     {
-        if (damageRandomTo % 2 == 0 && UnityEngine.Random.Range(1, damageRandomTo / 3) > 10)
+        if (damageRandomTo % 2 == 0 && UnityEngine.Random.Range(0, 10) < damageRandomTo / 3)
         {
             damageRandomMultipler++;
             damageRandomTo /= 2;
